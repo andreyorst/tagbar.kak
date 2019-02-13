@@ -34,8 +34,8 @@ define-command tagbar %{ evaluate-commands %sh{
     printf "%s\n" "try %{ delete-buffer *tagbar* }
                    edit! -fifo ${fifo} *tagbar*
                    set-option window filetype tagbar
-                   hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r ${fifo%/*} } }
-                   try %{ hook -always global KakEnd .* %{ nop %sh{ rm -r ${tmp} } } }
+                   hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r ${fifo} } }
+                   # try %{ hook -always global KakEnd .* %{ nop %sh{ rm -rf ${tmp} } } }
                    map buffer normal '<ret>' '<a-h>f:;h<a-t><space><a-;>:<space>tagbar-jump $tags<ret>'"
 
     eval "set -- $kak_opt_tagbar_kinds"
