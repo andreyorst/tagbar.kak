@@ -10,7 +10,7 @@ for current buffer, and [readtags][3] to display them.
 Add this snippet to your `kakrc`:
 
 ```kak
-plug "andreyorst/tagbar.kak
+plug "andreyorst/tagbar.kak"
 ```
 
 ### Without Plugin Manager
