@@ -1,3 +1,14 @@
+add-highlighter shared/tagbar group
+add-highlighter shared/tagbar/category regex ^[^\s]{2}[^\n]+$        0:keyword
+add-highlighter shared/tagbar/info     regex ^\h{2}[^:]+:\h([^\n]+)$ 1:comment
+
+hook -group tagbar-syntax global WinSetOption filetype=tagbar %{
+    add-highlighter window/tagbar ref tagbar
+    hook -always -once window WinSetOption filetype=.* %{
+        remove-highlighter window/tagbar
+    }
+}
+
 declare-option str-list tagbar_kinds ''
 
 try %{
@@ -22,20 +33,26 @@ define-command tagbar %{ evaluate-commands %sh{
 
     printf "%s\n" "try %{ delete-buffer *tagbar* }
                    edit! -fifo ${fifo} *tagbar*
+                   set-option window filetype tagbar
                    hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r ${fifo%/*} } }
                    try %{ hook -always global KakEnd .* %{ nop %sh{ rm -r ${tmp} } } }
-                   map buffer normal '<ret>' '<a-l><a-i><a-w>:<space>tagbar-jump $tags<ret>'"
-                   # set-option window filetype tagbar
+                   map buffer normal '<ret>' '<a-h>f:;h<a-t><space><a-;>:<space>tagbar-jump $tags<ret>'"
 
     eval "set -- $kak_opt_tagbar_kinds"
     while [ $# -gt 0 ]; do
         kind=$1
         description=$2
-        readtags -t "$tags" -Q '(eq? $kind "'$kind'")' -l | cut -f1 > $contents
+        readtags -t "$tags" -Q '(eq? $kind "'$kind'")' -l | awk -F '\t|\n' '
+            /[^\t]+\t[^\t]+\t\/\^.*\$?\// {
+                tag = $1;
+                info = $0; sub(".*\t/\\^", "", info); sub("\\$?/$", "", info); gsub(/^[\t+ ]+/, "", info);
+                print tag ": " info
+            }
+        ' > $contents
         if [ -s $contents ]; then
             printf "%s\n" "$description" >> $tagbar
             while read line; do
-                printf "  %s\n" $line >> $tagbar
+                printf "  %s\n" "$line" >> $tagbar
             done < $contents
             printf "\n" >> $tagbar
         fi
