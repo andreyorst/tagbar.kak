@@ -20,7 +20,7 @@ source it manually.
 ## Dependencies
 For this plugin to work, you need working [ctags][2] and [readtags][3]
 programs.    Note    that    [readtags][3]    isn't    shipped    with
-[excuberant-ctags][2] by default (you can use [[universal-ctags][5]).
+[excuberant-ctags][2] by default (you can use [universal-ctags][5]).
 
 [1]: https://github.com/majutsushi/tagbar
 [2]: http://ctags.sourceforge.net/
