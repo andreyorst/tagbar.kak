@@ -7,9 +7,19 @@
 # │ GitHub.com/andreyorst/tagbar.kak │
 # ╰──────────────────────────────────╯
 
+declare-option -docstring "name of the client in which all source code jumps will be executed" \
+str jumpclient
+
+declare-option -docstring "Sort tags in tagbar buffer.
+Possible values:
+true,  yes, on, 1: Sort tags.
+false, no, off, 0: Do not sort.
+foldcase: The foldcase value specifies case insensitive (or case-folded) sorting." \
+str tagbar_sort "true"
+
 add-highlighter shared/tagbar group
-add-highlighter shared/tagbar/category regex ^[^\s]{2}[^\n]+$     0:keyword
-add-highlighter shared/tagbar/info     regex (?<=:\h)(.*?)$ 1:comment
+add-highlighter shared/tagbar/category regex ^[^\s]{2}[^\n]+$ 0:keyword
+add-highlighter shared/tagbar/info     regex (?<=:\h)(.*?)$   1:comment
 
 hook -group tagbar-syntax global WinSetOption filetype=tagbar %{
     add-highlighter window/tagbar ref tagbar
@@ -19,15 +29,15 @@ hook -group tagbar-syntax global WinSetOption filetype=tagbar %{
 }
 
 define-command tagbar %{ evaluate-commands %sh{
-    tmp=$(mktemp -d "${TMPDIR:-/tmp}/tagbar.XXXXXXXX")
-    tagbar=$(mktemp "$tmp/buffer.XXXXXXXX")
-    contents=$(mktemp "$tmp/contents.XXXXXXXX")
-    tags=$(mktemp "$tmp/tags.XXXXXXXX")
+
+    tmp="${TMPDIR:-/tmp}/tagbar"
+    [ ! -d $tmp ] && mkdir $tmp
+    tags="$tmp/tags-${kak_buffile##*/}"
 
     fifo="${tmp}/fifo"
     mkfifo ${fifo}
 
-    ctags -f "$tags" "$kak_buffile"
+    ctags --sort="${kak_opt_tagbar_sort:-yes}" -f "$tags" "$kak_buffile"
 
     printf "%s\n" "try %{ delete-buffer *tagbar* }
                    edit! -fifo ${fifo} *tagbar*
@@ -36,32 +46,29 @@ define-command tagbar %{ evaluate-commands %sh{
                    try %{ hook -always global KakEnd .* %{ nop %sh{ rm -rf ${tmp} } } }
                    map buffer normal '<ret>' '<a-h>;/:<space><ret>2h<a-h>2<s-l><a-;>:<space>tagbar-jump $tags<ret>'"
 
-    eval "set -- $kak_opt_tagbar_kinds"
-    while [ $# -gt 0 ]; do
-        kind=$1
-        description=$2
-        readtags -t "$tags" -Q '(eq? $kind "'$kind'")' -l | awk -F '\t|\n' '
-            /[^\t]+\t[^\t]+\t\/\^.*\$?\// {
-                tag = $1;
-                info = $0; sub(".*\t/\\^", "", info); sub("\\$?/$", "", info); gsub(/^[\t+ ]+/, "", info);
-                print tag ": " info
-            }
-        ' > $contents
-        if [ -s $contents ]; then
-            printf "%s\n" "$description" >> $tagbar
-            while read line; do
-                printf "  %s\n" "$line" >> $tagbar
-            done < $contents
-            printf "\n" >> $tagbar
-        fi
-        shift 2
-    done
-    ( cat $tagbar > $fifo ) > /dev/null 2>&1 < /dev/null &
+    (
+        eval "set -- $kak_opt_tagbar_kinds"
+        while [ $# -gt 0 ]; do
+            export description=$2
+            readtags -t "$tags" -Q '(eq? $kind "'$1'")' -l | awk -F '\t|\n' '
+                /[^\t]+\t[^\t]+\t\/\^.*\$?\// {
+                    tag = $1;
+                    info = $0; sub(".*\t/\\^", "", info); sub("\\$?/$", "", info); gsub(/^[\t+ ]+/, "", info);
+                    out = out "  " tag ": " info "\n"
+                }
+                END {
+                    if (length(out) != 0) {
+                        print ENVIRON["description"]
+                        print out
+                    }
+                }
+            ' >> $fifo
+            shift 2
+        done
+    ) > /dev/null 2>&1 < /dev/null &
 }}
 
-declare-option -docstring "name of the client in which all source code jumps will be executed" \
-str jumpclient
-
+# define-command
 define-command -docstring "tagbar-jump <tags-file>: jump to definition of selected tag" \
 tagbar-jump -params 1 %{
     try %{ focus %opt{jumpclient} }
@@ -92,7 +99,7 @@ tagbar-jump -params 1 %{
     }
 }
 
-declare-option str-list tagbar_kinds ''
+declare-option -hidden str-list tagbar_kinds ''
 
 try %{
     hook global WinSetOption filetype=c %{
