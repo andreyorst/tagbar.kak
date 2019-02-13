@@ -61,8 +61,11 @@ define-command tagbar %{ evaluate-commands %sh{
     ( cat $tagbar > $fifo ) > /dev/null 2>&1 < /dev/null &
 }}
 
+declare-option -docstring "name of the client in which all source code jumps will be executed" \
+str jumpclient
+
 define-command -docstring "tagbar-jump <tags-file>: jump to definition of selected tag" \
-tagbar-jump -params 1 %{ evaluate-commands %sh{
+tagbar-jump -params 1 %{ evaluate-commands -try-client %opt{jumpclient} %sh{
     tags="$1"
     export tagname="${kak_selection}"
     readtags -t "$tags" "$tagname" | awk -F '\t|\n' '
@@ -70,7 +73,7 @@ tagbar-jump -params 1 %{ evaluate-commands %sh{
             opener = "{"; closer = "}"
             line = $0; sub(".*\t/\\^", "", line); sub("\\$?/$", "", line);
             menu_info = line; gsub("!", "!!", menu_info); gsub(/^[\t+ ]+/, "", menu_info); gsub(opener, "\\"opener, menu_info); gsub(/\t/, " ", menu_info);
-            keys = line; gsub(/</, "<lt>", keys); gsub(/\t/, "<c-v><c-i>", keys); gsub("!", "!!", keys); gsub("&", "&&", keys); gsub("?", "??", keys); gsub("\\|", "||", keys);
+            keys = line; gsub(/</, "<lt>", keys); gsub(/\t/, "<c-v><c-i>", keys); gsub("!", "!!", keys); gsub("&", "&&", keys); gsub("?", "??", keys); gsub("\\|", "||", keys); gsub("\\\\/", "/", keys);
             menu_item = $2; gsub("!", "!!", menu_item);
             edit_path = $2; gsub("&", "&&", edit_path); gsub("?", "??", edit_path); gsub("\\|", "||", edit_path);
             select = $1; gsub(/</, "<lt>", select); gsub(/\t/, "<c-v><c-i>", select); gsub("!", "!!", select); gsub("&", "&&", select); gsub("?", "??", select); gsub("\\|", "||", select);
@@ -81,7 +84,7 @@ tagbar-jump -params 1 %{ evaluate-commands %sh{
             menu_item = $2; gsub("!", "!!", menu_item);
             select = $1; gsub(/</, "<lt>", select); gsub(/\t/, "<c-v><c-i>", select); gsub("!", "!!", select); gsub("&", "&&", select); gsub("?", "??", select); gsub("\\|", "||", select);
             menu_info = $3; gsub("!", "!!", menu_info); gsub(opener, "\\"opener, menu_info);
-            edit_path = $2; gsub("!", "!!", edit_path); gsub("?", "??", edit_path); gsub("&", "&&", edit_path); gsub("\\|", "||", keys);
+            edit_path = $2; gsub("!", "!!", edit_path); gsub("?", "??", edit_path); gsub("&", "&&", edit_path); gsub("\\|", "||", edit_path);
             line_number = $3;
             out = out "%!" menu_item ": {MenuInfo}" menu_info "! %!evaluate-commands %? try %& edit -existing %|" edit_path "|; execute-keys %|" line_number "gx| & catch %& echo -markup %|{Error}unable to find tag| &; try %& execute-keys %|s\\Q" select "<ret>| & ? !"
         }
