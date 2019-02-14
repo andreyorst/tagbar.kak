@@ -9,6 +9,8 @@
 
 declare-option -docstring "name of the client in which all source code jumps will be executed" \
 str jumpclient
+declare-option -docstring "name of the client in which utilities display information" \
+str toolsclient
 
 declare-option -docstring "Sort tags in tagbar buffer.
 Possible values:
@@ -28,33 +30,42 @@ hook -group tagbar-syntax global WinSetOption filetype=tagbar %{
     }
 }
 
-define-command tagbar %{ evaluate-commands %sh{
+# hook -group tagbar-watch global WinDisplay .* %{
+#     tagbar-update %val{buffile}
+# }
 
+hook -group tagbar-watch global BufWritePost .* %{
+    tagbar-update %val{buffile}
+}
+
+define-command tagbar-update -params 1 %{ evaluate-commands -try-client %opt{toolsclient} %sh{
+    buffile="$1"
     tmp="${TMPDIR:-/tmp}/tagbar"
     [ ! -d $tmp ] && mkdir $tmp
-    tags="$tmp/tags-${kak_buffile##*/}"
+    tags="$tmp/tags"
 
     fifo="${tmp}/fifo"
     mkfifo ${fifo}
 
-    ctags --sort="${kak_opt_tagbar_sort:-yes}" -f "$tags" "$kak_buffile"
+    ctags --sort="${kak_opt_tagbar_sort:-yes}" -f "$tags" "$buffile"
 
     printf "%s\n" "try %{ delete-buffer *tagbar* }
                    edit! -fifo ${fifo} *tagbar*
                    set-option window filetype tagbar
                    hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r ${fifo} } }
                    try %{ hook -always global KakEnd .* %{ nop %sh{ rm -rf ${tmp} } } }
-                   map buffer normal '<ret>' '<a-h>;/:<space><ret>2h<a-h>2<s-l><a-;>:<space>tagbar-jump $tags<ret>'"
+                   map buffer normal '<ret>' '<a-h>;/:<c-v><c-i><ret><a-h>2<s-l><a-l>:<space>tagbar-jump $kak_bufname<ret>'"
 
     (
         eval "set -- $kak_opt_tagbar_kinds"
         while [ $# -gt 0 ]; do
-            export description=$2
+            export description="$2"
             readtags -t "$tags" -Q '(eq? $kind "'$1'")' -l | awk -F '\t|\n' '
                 /[^\t]+\t[^\t]+\t\/\^.*\$?\// {
                     tag = $1;
-                    info = $0; sub(".*\t/\\^", "", info); sub("\\$?/$", "", info); gsub(/^[\t+ ]+/, "", info);
-                    out = out "  " tag ": " info "\n"
+                    info = $0; sub(".*\t/\\^", "", info); sub("\\$?/$", "", info); gsub(/^[\t ]+/, "", info); gsub("\\\\/", "/", info);
+                    if (length(info) != 0)
+                        out = out "  " tag ":\t" info "\n"
                 }
                 END {
                     if (length(out) != 0) {
@@ -68,35 +79,18 @@ define-command tagbar %{ evaluate-commands %sh{
     ) > /dev/null 2>&1 < /dev/null &
 }}
 
-# define-command
-define-command -docstring "tagbar-jump <tags-file>: jump to definition of selected tag" \
-tagbar-jump -params 1 %{
-    try %{ focus %opt{jumpclient} }
+define-command tagbar-jump -params 1 %{
     evaluate-commands -try-client %opt{jumpclient} %sh{
-        tags="$1"
-        export tagname="${kak_selection}"
-        readtags -t "$tags" "$tagname" | awk -F '\t|\n' '
-            /[^\t]+\t[^\t]+\t\/\^.*\$?\// {
-                opener = "{"; closer = "}"
-                line = $0; sub(".*\t/\\^", "", line); sub("\\$?/$", "", line);
-                menu_info = line; gsub("!", "!!", menu_info); gsub(/^[\t+ ]+/, "", menu_info); gsub(opener, "\\"opener, menu_info); gsub(/\t/, " ", menu_info);
-                keys = line; gsub(/</, "<lt>", keys); gsub(/\t/, "<c-v><c-i>", keys); gsub("!", "!!", keys); gsub("&", "&&", keys); gsub("?", "??", keys); gsub("\\|", "||", keys); gsub("\\\\/", "/", keys);
-                menu_item = $2; gsub("!", "!!", menu_item);
-                edit_path = $2; gsub("&", "&&", edit_path); gsub("?", "??", edit_path); gsub("\\|", "||", edit_path);
-                select = $1; gsub(/</, "<lt>", select); gsub(/\t/, "<c-v><c-i>", select); gsub("!", "!!", select); gsub("&", "&&", select); gsub("?", "??", select); gsub("\\|", "||", select);
-                out = out "%!" menu_item ": {MenuInfo}" menu_info "! %!evaluate-commands %? try %& edit -existing %|" edit_path "|; execute-keys %|/\\Q" keys "<ret>vc| & catch %& echo -markup %|{Error}unable to find tag| &; try %& execute-keys %|s\\Q" select "<ret>| & ? !"
-            }
-            /[^\t]+\t[^\t]+\t[0-9]+/ {
-                opener = "{"; closer = "}"
-                menu_item = $2; gsub("!", "!!", menu_item);
-                select = $1; gsub(/</, "<lt>", select); gsub(/\t/, "<c-v><c-i>", select); gsub("!", "!!", select); gsub("&", "&&", select); gsub("?", "??", select); gsub("\\|", "||", select);
-                menu_info = $3; gsub("!", "!!", menu_info); gsub(opener, "\\"opener, menu_info);
-                edit_path = $2; gsub("!", "!!", edit_path); gsub("?", "??", edit_path); gsub("&", "&&", edit_path); gsub("\\|", "||", edit_path);
-                line_number = $3;
-                out = out "%!" menu_item ": {MenuInfo}" menu_info "! %!evaluate-commands %? try %& edit -existing %|" edit_path "|; execute-keys %|" line_number "gx| & catch %& echo -markup %|{Error}unable to find tag| &; try %& execute-keys %|s\\Q" select "<ret>| & ? !"
-            }
-            END { print ( length(out) == 0 ? "echo -markup %{{Error}no such tag " ENVIRON["tagname"] "}" : "menu -markup -auto-single " out ) }'
+        printf "%s:\t%s\n" "$kak_selection" "$1" | awk -F ':\t' '{
+                keys = $2; gsub(/</, "<lt>", keys); gsub(/\t/, "<c-v><c-i>", keys);
+                gsub("&", "&&", keys); gsub("?", "??", keys);
+                select = $1; gsub(/</, "<lt>", select); gsub(/\t/, "<c-v><c-i>", select);
+                gsub("&", "&&", select); gsub("?", "??", select);
+                bufname = $3; gsub("&", "&&", bufname); gsub("?", "??", bufname);
+                print "try %? buffer %&" bufname "&; execute-keys %&/\\Q" keys "<ret>vc& ? catch %? echo -markup %&{Error}unable to find tag& ?; try %? execute-keys %&s\\Q" select "<ret>& ?"
+            }'
     }
+    try %{ focus %opt{jumpclient} }
 }
 
 declare-option -hidden str-list tagbar_kinds ''
@@ -403,3 +397,4 @@ try %{
         set-option global tagbar_kinds 'p' 'plays'
     }
 }
+
