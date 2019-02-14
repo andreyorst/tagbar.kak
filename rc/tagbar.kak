@@ -14,13 +14,25 @@ str tagbarclient
 
 declare-option -docstring "Sort tags in tagbar buffer.
 Possible values:
-true:     Sort tags.
-false:    Do not sort tags.
-foldcase: The foldcase value specifies case insensitive (or case-folded) sorting." \
+  true:     Sort tags.
+  false:    Do not sort tags.
+  foldcase: The foldcase value specifies case insensitive (or case-folded) sorting.
+Default value: true" \
 str tagbar_sort "true"
 
-declare-option str tagbar_default_split "horizontal"
-declare-option str tagbar_size '28'
+declare-option -docstring "Choose how to split current pane to display tagbar panel.
+  Possible values: vertical, horizontal
+  Default value: horizontal" \
+str tagbar_split "horizontal"
+
+declare-option -docstring "Choose where to display tagbar panel.
+  Possible values: left, right
+  Default value: right
+When tagbar_split is set to 'horizontal', 'left' and 'right' will make split above or below current pane respectively." \
+str tagbar_side "right"
+
+declare-option -docstring "The size of tagbar pane. Can be either a number of columns or size in percentage"\
+str tagbar_size '28'
 
 add-highlighter shared/tagbar group
 add-highlighter shared/tagbar/category regex ^[^\s]{2}[^\n]+$ 0:keyword
@@ -37,9 +49,10 @@ define-command tagbar-enable %{
     set-option global jumpclient %val{client}
     nop %sh{
         if [ -n "$kak_client_env_TMUX" ]; then
-            [ "$kak_opt_tagbar_default_split" = "vertical" ] && split="-v" || split="-h"
+            [ "$kak_opt_tagbar_split" = "vertical" ] && split="-v" || split="-h"
+            [ "$kak_opt_tagbar_side" = "left" ] && side="-b" || side=
             [ -n "${kak_opt_tagbar_size%%*%}" ] && measure="-p" || measure="-l"
-            tmux split-window $split $measure ${kak_opt_tagbar_size%%%*} kak -c $kak_session -e 'rename-client tagbar; set global tagbarclient %val{client}'
+            tmux split-window $split $side $measure ${kak_opt_tagbar_size%%%*} kak -c $kak_session -e 'rename-client tagbar; set global tagbarclient %val{client}'
         elif [ -n "$kak_opt_termcmd" ]; then
             ( $kak_opt_termcmd "sh -c 'kak -c $kak_session -e \"rename-client tagbar; set global tagbarclient %val{client}\"'" ) > /dev/null 2>&1 < /dev/null &
         fi
@@ -78,7 +91,7 @@ define-command tagbar-update -params 1 %{ evaluate-commands -try-client %opt{tag
     fifo="${tmp}/fifo"
     mkfifo ${fifo}
 
-    ctags --sort="${kak_opt_tagbar_sort:-yes}" -f "$tags" "$buffile"
+    ctags --sort="${kak_opt_tagbar_sort:-yes}" -f "$tags" "$buffile" > /dev/null 2>&1
 
     eval "set -- $kak_opt_tagbar_kinds"
     while [ $# -gt 0 ]; do
