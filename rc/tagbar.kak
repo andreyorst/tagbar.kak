@@ -10,7 +10,7 @@
 declare-option -docstring "name of the client in which all source code jumps will be executed" \
 str jumpclient
 declare-option -docstring "name of the client in which utilities display information" \
-str toolsclient
+str tagbarclient
 
 declare-option -docstring "Sort tags in tagbar buffer.
 Possible values:
@@ -30,15 +30,20 @@ hook -group tagbar-syntax global WinSetOption filetype=tagbar %{
     }
 }
 
-# hook -group tagbar-watch global WinDisplay .* %{
-#     tagbar-update %val{buffile}
-# }
-
-hook -group tagbar-watch global BufWritePost .* %{
-    tagbar-update %val{buffile}
+define-command tagbar-enable %{
+    set-option global jumpclient %val{client}
+    vsplit
+    set-option global tagbarclient %val{client}
+    hook -group tagbar-watch global WinDisplay .* %{ tagbar-update %val{buffile} }
+    hook -group tagbar-watch global BufWritePost .* %{ tagbar-update %val{buffile} }
 }
 
-define-command tagbar-update -params 1 %{ evaluate-commands -try-client %opt{toolsclient} %sh{
+define-command tagbar-disable %{
+    remove-hooks global tagbar-watch
+}
+
+
+define-command tagbar-update -params 1 %{ evaluate-commands -try-client %opt{tagbarclient} %sh{
     buffile="$1"
     tmp="${TMPDIR:-/tmp}/tagbar"
     [ ! -d $tmp ] && mkdir $tmp
@@ -49,12 +54,11 @@ define-command tagbar-update -params 1 %{ evaluate-commands -try-client %opt{too
 
     ctags --sort="${kak_opt_tagbar_sort:-yes}" -f "$tags" "$buffile"
 
-    printf "%s\n" "try %{ delete-buffer *tagbar* }
-                   edit! -fifo ${fifo} *tagbar*
+    printf "%s\n" "edit! -fifo ${fifo} *tagbar*
                    set-option window filetype tagbar
                    hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r ${fifo} } }
                    try %{ hook -always global KakEnd .* %{ nop %sh{ rm -rf ${tmp} } } }
-                   map buffer normal '<ret>' '<a-h>;/:<c-v><c-i><ret><a-h>2<s-l><a-l>:<space>tagbar-jump $kak_bufname<ret>'"
+                   map buffer normal '<ret>' '<a-h>;/:<c-v><c-i><ret><a-h>2<s-l><a-l><a-;>:<space>tagbar-jump $kak_bufname<ret>'"
 
     (
         eval "set -- $kak_opt_tagbar_kinds"
