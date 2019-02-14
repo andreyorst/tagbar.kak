@@ -1,3 +1,5 @@
+**Note:** This plugin currently in **alpha** state. It can break your Kakoune experience.
+Use with care. Bug reports are much appreciated.
 # tagbar.kak
 
 This  plugin displays  the  outline overview  of  your code,  somewhat
