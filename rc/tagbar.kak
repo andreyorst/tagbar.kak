@@ -143,7 +143,7 @@ define-command -hidden tagbar-update %{ evaluate-commands %sh{
     done
 
     printf "%s\n" "evaluate-commands -client %opt{tagbarclient} %{
-                       edit! -fifo ${fifo} *tagbar*
+                       edit! -debug -fifo ${fifo} *tagbar*
                        set-option buffer filetype tagbar
                        map buffer normal '<ret>' '<a-h>;/:<c-v><c-i><ret><a-h>2<s-l><a-l><a-;>:<space>tagbar-jump $kak_bufname<ret>'
                        try %{
