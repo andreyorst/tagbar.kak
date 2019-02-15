@@ -10,7 +10,7 @@
 declare-option -docstring "name of the client in which all source code jumps will be executed" \
 str jumpclient
 declare-option -docstring "name of the client in which utilities display information" \
-str tagbarclient
+str tagbarclient 'tagbarclient'
 
 declare-option -docstring "Sort tags in tagbar buffer.
   Possible values:
@@ -63,8 +63,13 @@ define-command tagbar-enable %{
 
         [ -z "$kak_opt_jumpclient" ] && printf "%s\n" "set-option global jumpclient $kak_client"
 
-        tagbar_cmd='rename-client tagbarclient
-                    set-option global tagbarclient %val{client}'
+        tagbar_cmd="rename-client %opt{tagbarclient}
+                    set-option global tagbar_active true
+                    evaluate-commands -client %opt{jumpclient} tagbar-update
+                    hook -group tagbar-watchers global WinDisplay .* %{ tagbar-update }
+                    hook -group tagbar-watchers global BufWritePost .* %{ tagbar-update }
+                    hook -group tagbar-watchers global WinSetOption tagbar_sort=.* %{ tagbar-update }
+                    hook -group tagbar-watchers global WinSetOption tagbar_display_anon=.* %{ tagbar-update }"
 
         if [ -n "$TMUX" ]; then
             [ "$kak_opt_tagbar_split" = "vertical" ] && split="-v" || split="-h"
@@ -74,13 +79,6 @@ define-command tagbar-enable %{
         elif [ -n "$kak_opt_termcmd" ]; then
             ( $kak_opt_termcmd "sh -c 'kak -c $kak_session -e \"$tagbar_cmd\"'" ) > /dev/null 2>&1 < /dev/null &
         fi
-
-        printf "%s\n" "hook -group tagbar-watchers global WinDisplay .* %{ tagbar-update }
-                       hook -group tagbar-watchers global BufWritePost .* %{ tagbar-update }
-                       hook -group tagbar-watchers global WinSetOption tagbar_sort=.* %{ tagbar-update }
-                       hook -group tagbar-watchers global WinSetOption tagbar_display_anon=.* %{ tagbar-update }
-                       set-option global tagbar_active 'true'
-                       tagbar-update"
     }
 }
 
