@@ -64,10 +64,6 @@ define-command tagbar-enable %{ evaluate-commands %sh{
 
     printf "%s\n" "set-option global tagbarjumpclient '${kak_client:-client0}'"
 
-    printf "tagbar-create\n"
-}}
-
-define-command -hidden tagbar-create %{ evaluate-commands %sh{
     tagbar_cmd="rename-client %opt{tagbarclient}
                 set-option global tagbar_active 'true'
                 evaluate-commands -client %opt{tagbarjumpclient} %{ tagbar-update }
@@ -92,7 +88,6 @@ define-command tagbar-disable %{
     try %{ delete-buffer *tagbar* } catch %{ echo -debug "Can't close tagbar buffer. Perhaps it was closed by something else" }
     try %{
         evaluate-commands -client %opt{tagbarclient} quit
-        set-option global tagbarclient ''
     } catch %{
         echo -debug "Can't close tagbar client. Perhaps it was closed by something else"
     }
