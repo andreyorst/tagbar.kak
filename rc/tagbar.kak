@@ -71,7 +71,6 @@ define-command -hidden tagbar-create %{ evaluate-commands %sh{
     tagbar_cmd="rename-client %opt{tagbarclient}
                 set-option global tagbar_active 'true'
                 evaluate-commands -client %opt{tagbarjumpclient} %{ tagbar-update }
-                hook -group tagbar-watchers global FocusOut (?!$kak_opt_tagbarclient).* %{ set-option global tagbar_last_client %val{client} }
                 hook -group tagbar-watchers global FocusIn (?!$kak_opt_tagbarclient).* %{ try %{ tagbar-update 'focus' } }
                 hook -group tagbar-watchers global WinDisplay (?!\*tagbar\*).* %{ try %{ tagbar-update } }
                 hook -group tagbar-watchers global BufWritePost (?!\*tagbar\*).* %{ try %{ tagbar-update } }
@@ -108,13 +107,11 @@ define-command tagbar-toggle %{ evaluate-commands %sh{
 }}
 
 define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
+    [ "${kak_opt_tagbar_active}" != "true" ] && exit
     if [ "$1" = "focus" ] && [ "$kak_client" = "$kak_opt_tagbar_last_client" ]; then
         exit
     else
         printf "%s\n" "set-option global tagbar_last_client %{$kak_client}"
-    fi
-    if [ "${kak_opt_tagbar_active}" != "true" ]; then
-        exit
     fi
 
     printf "%s\n" "set-option global tagbarjumpclient '${kak_client:-client0}'"
