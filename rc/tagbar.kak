@@ -53,37 +53,36 @@ hook -group tagbar-syntax global WinSetOption filetype=tagbar %{
     }
 }
 
-define-command tagbar-enable %{ evaluate-commands %sh{
-    if [ "$kak_opt_tagbar_active" = "true" ]; then
-        exit
-    fi
-    if [ -z "$kak_opt_tagbar_kinds" ]; then
-        printf "%s\n" "echo -markup %{{Information}Filetype '$kak_opt_filetype' is not supported by Tagbar}"
-        exit
-    fi
+define-command tagbar-enable %{
+    evaluate-commands %sh{
+        [ "$kak_opt_tagbar_active" = "true" ] && exit
+        if [ -z "$kak_opt_tagbar_kinds" ]; then
+            printf "%s\n" "echo -markup %{{Information}Filetype '$kak_opt_filetype' is not supported by Tagbar}"
+            exit
+        fi
 
-    if [ -z "$kak_opt_jumpclient" ]; then
-        printf "%s\n" "set-option global jumpclient $kak_client"
-    fi
+        [ -z "$kak_opt_jumpclient" ] && printf "%s\n" "set-option global jumpclient $kak_client"
 
-    if [ -n "$TMUX" ]; then
-        [ "$kak_opt_tagbar_split" = "vertical" ] && split="-v" || split="-h"
-        [ "$kak_opt_tagbar_side" = "left" ] && side="-b" || side=
-        [ -n "${kak_opt_tagbar_size%%*%}" ] && measure="-p" || measure="-l"
-        tmux split-window $split $side $measure ${kak_opt_tagbar_size%%%*} kak -c $kak_session -e 'rename-client tagbarclient; set-option global tagbarclient %val{client}'
-    elif [ -n "$kak_opt_termcmd" ]; then
-        (
-            $kak_opt_termcmd "sh -c 'kak -c $kak_session -e \"rename-client tagbarclient; set-option global tagbarclient %val{client}\"'"
-        ) > /dev/null 2>&1 < /dev/null &
-    fi
+        tagbar_cmd='rename-client tagbarclient
+                    set-option global tagbarclient %val{client}'
 
-    printf "%s\n" "hook -once -group tagbar-watchers global WinDisplay (?!\*tagbar).* %{ tagbar-update }
-                   hook -once -group tagbar-watchers global BufWritePost (?!\*tagbar).* %{ tagbar-update }
-                   hook -once -group tagbar-watchers global WinSetOption tagbar_(sort|display_anon)=(true|false) %{ tagbar-update }"
+        if [ -n "$TMUX" ]; then
+            [ "$kak_opt_tagbar_split" = "vertical" ] && split="-v" || split="-h"
+            [ "$kak_opt_tagbar_side" = "left" ] && side="-b" || side=
+            [ -n "${kak_opt_tagbar_size%%*%}" ] && measure="-p" || measure="-l"
+            tmux split-window $split $side $measure ${kak_opt_tagbar_size%%%*} kak -c $kak_session -e "$tagbar_cmd"
+        elif [ -n "$kak_opt_termcmd" ]; then
+            ( $kak_opt_termcmd "sh -c 'kak -c $kak_session -e \"$tagbar_cmd\"'" ) > /dev/null 2>&1 < /dev/null &
+        fi
 
-    printf "%s\n" "set-option global tagbar_active 'true'"
-
-}}
+        printf "%s\n" "hook -group tagbar-watchers global WinDisplay .* %{ tagbar-update }
+                       hook -group tagbar-watchers global BufWritePost .* %{ tagbar-update }
+                       hook -group tagbar-watchers global WinSetOption tagbar_sort=.* %{ tagbar-update }
+                       hook -group tagbar-watchers global WinSetOption tagbar_display_anon=.* %{ tagbar-update }
+                       set-option global tagbar_active 'true'
+                       tagbar-update"
+    }
+}
 
 define-command tagbar-disable %{
     set-option global tagbar_active 'false'
@@ -145,6 +144,7 @@ define-command -hidden tagbar-update %{ evaluate-commands %sh{
     printf "%s\n" "evaluate-commands -client %opt{tagbarclient} %{
                        edit! -fifo ${fifo} *tagbar*
                        set-option buffer filetype tagbar
+                       map buffer normal '<ret>' '<a-h>;/:<c-v><c-i><ret><a-h>2<s-l><a-l><a-;>:<space>tagbar-jump $kak_bufname<ret>'
                        try %{
                            remove-highlighter window/wrap
                            remove-highlighter window/numbers
@@ -152,15 +152,14 @@ define-command -hidden tagbar-update %{ evaluate-commands %sh{
                            remove-highlighter window/wrap
                            set-option window tabstop 1
                        }
-                       try %{ hook -always global KakEnd .* %{ nop %sh{ rm -rf ${tmp} } } }
-                       map buffer normal '<ret>' '<a-h>;/:<c-v><c-i><ret><a-h>2<s-l><a-l><a-;>:<space>tagbar-jump $kak_bufname<ret>'
                    }"
 
     ( cat $tagbar_buffer > $fifo; rm -rf $tmp ) > /dev/null 2>&1 < /dev/null &
+
 }}
 
 define-command tagbar-jump -params 1 %{
-    evaluate-commands -try-client %opt{jumpclient} %sh{
+    evaluate-commands -client %opt{jumpclient} %sh{
         printf "%s:\t%s\n" "$kak_selection" "$1" | awk -F ':\t' '{
                 keys = $2; gsub(/</, "<lt>", keys); gsub(/\t/, "<c-v><c-i>", keys);
                 gsub("&", "&&", keys); gsub("?", "??", keys);
