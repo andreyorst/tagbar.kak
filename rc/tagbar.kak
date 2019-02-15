@@ -18,12 +18,12 @@ declare-option -docstring "Sort tags in tagbar buffer.
     false:    Do not sort tags.
     foldcase: The foldcase value specifies case insensitive (or case-folded) sorting.
   Default value: true" \
-str tagbar_sort
+str tagbar_sort 'true'
 
 declare-option -docstring "display anonymous tags.
   Possible values: true, false
   Default value: true" \
-str tagbar_display_anon
+str tagbar_display_anon 'true'
 
 declare-option -docstring "Choose how to split current pane to display tagbar panel.
   Possible values: vertical, horizontal
