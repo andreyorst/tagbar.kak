@@ -7,10 +7,12 @@
 # │ GitHub.com/andreyorst/tagbar.kak │
 # ╰──────────────────────────────────╯
 
-declare-option -docstring "name of the client in which all source code jumps will be executed" \
+declare-option -hidden -docstring "name of the client in which all source code jumps will be executed" \
 str tagbarjumpclient
 declare-option -docstring "name of the client that tagbar will use to display itself" \
 str tagbarclient 'tagbarclient'
+declare-option -hidden -docstring "helps to keep track of focus events" \
+str tagbar_last_file ''
 
 declare-option -docstring "Sort tags in tagbar buffer.
   Possible values:
@@ -69,6 +71,7 @@ define-command -hidden tagbar-create %{ evaluate-commands %sh{
     tagbar_cmd="rename-client %opt{tagbarclient}
                 set-option global tagbar_active 'true'
                 evaluate-commands -client %opt{tagbarjumpclient} %{ tagbar-update }
+                hook -group tagbar-watchers global FocusOut (?!$kak_opt_tagbarclient).* %{ set-option global tagbar_last_file %val{buffile} }
                 hook -group tagbar-watchers global FocusIn (?!$kak_opt_tagbarclient).* %{ try %{ tagbar-update } }
                 hook -group tagbar-watchers global WinDisplay (?!\*tagbar\*).* %{ try %{ tagbar-update } }
                 hook -group tagbar-watchers global BufWritePost (?!\*tagbar\*).* %{ try %{ tagbar-update } }
@@ -105,6 +108,9 @@ define-command tagbar-toggle %{ evaluate-commands %sh{
 }}
 
 define-command -hidden tagbar-update %{ evaluate-commands %sh{
+    if [ "$kak_buffile" = "$kak_opt_tagbar_last_file" ]; then
+        exit
+    fi
     if [ "${kak_opt_tagbar_active}" != "true" ]; then
         exit
     fi
@@ -159,7 +165,6 @@ define-command -hidden tagbar-update %{ evaluate-commands %sh{
                    }"
 
     ( cat $tagbar_buffer > $fifo; rm -rf $tmp ) > /dev/null 2>&1 < /dev/null &
-
 }}
 
 define-command -hidden tagbar-jump -params 1 %{
