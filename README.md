@@ -1,6 +1,8 @@
 
 # tagbar.kak
 
+![tagbar.kak](https://user-images.githubusercontent.com/19470159/52857326-e109f800-3137-11e9-8341-8993cfd42d6a.png)
+
 This plugin displays the outline overview  of your code, somewhat similar to Vim
 plugin [tagbar][1]. It uses [ctags][2] to  generate tags for current buffer, and
 [readtags][3] to display them.
