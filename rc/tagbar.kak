@@ -80,7 +80,7 @@ define-command -hidden tagbar-create %{ evaluate-commands %sh{
     if [ -n "$TMUX" ]; then
         [ "$kak_opt_tagbar_split" = "vertical" ] && split="-v" || split="-h"
         [ "$kak_opt_tagbar_side" = "left" ] && side="-b" || side=
-        [ -n "${kak_opt_tagbar_size%%*%}" ] && measure="-p" || measure="-l"
+        [ -n "${kak_opt_tagbar_size%%*%}" ] && measure="-l" || measure="-p"
         tmux split-window $split $side $measure ${kak_opt_tagbar_size%%%*} kak -c $kak_session -e "$tagbar_cmd"
     elif [ -n "$kak_opt_termcmd" ]; then
         ( $kak_opt_termcmd "sh -c 'kak -c $kak_session -e \"$tagbar_cmd\"'" ) > /dev/null 2>&1 < /dev/null &
