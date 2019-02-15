@@ -8,8 +8,8 @@
 # ╰──────────────────────────────────╯
 
 declare-option -docstring "name of the client in which all source code jumps will be executed" \
-str jumpclient
-declare-option -docstring "name of the client in which utilities display information" \
+str tagbarjumpclient
+declare-option -docstring "name of the client that tagbar will use to display itself" \
 str tagbarclient 'tagbarclient'
 
 declare-option -docstring "Sort tags in tagbar buffer.
@@ -60,20 +60,19 @@ define-command tagbar-enable %{ evaluate-commands %sh{
         exit
     fi
 
-    [ -z "$kak_opt_jumpclient" ] && printf "%s\n" "set-option global jumpclient $kak_client"
+    printf "%s\n" "set-option global tagbarjumpclient '${kak_client:-client0}'"
 
     printf "tagbar-create\n"
 }}
 
 define-command -hidden tagbar-create %{ evaluate-commands %sh{
-    update_cmd="try %{ evaluate-commands -client %opt{jumpclient} tagbar-update }"
-
     tagbar_cmd="rename-client %opt{tagbarclient}
                 set-option global tagbar_active 'true'
-                evaluate-commands -client %opt{jumpclient} tagbar-update
-                hook -group tagbar-watchers global WinDisplay .* %{ $update_cmd }
-                hook -group tagbar-watchers global BufWritePost .* %{ $update_cmd }
-                hook -group tagbar-watchers global WinSetOption tagbar_(sort|display_anon)=.* %{ $update_cmd }"
+                evaluate-commands -client %opt{tagbarjumpclient} %{ tagbar-update }
+                hook -group tagbar-watchers global FocusIn (?!$kak_opt_tagbarclient).* %{ try %{ tagbar-update } }
+                hook -group tagbar-watchers global WinDisplay (?!\*tagbar\*).* %{ try %{ tagbar-update } }
+                hook -group tagbar-watchers global BufWritePost (?!\*tagbar\*).* %{ try %{ tagbar-update } }
+                hook -group tagbar-watchers global WinSetOption tagbar_(sort|display_anon)=.* %{ try %{ tagbar-update } }"
 
     if [ -n "$TMUX" ]; then
         [ "$kak_opt_tagbar_split" = "vertical" ] && split="-v" || split="-h"
@@ -109,6 +108,9 @@ define-command -hidden tagbar-update %{ evaluate-commands %sh{
     if [ "${kak_opt_tagbar_active}" != "true" ]; then
         exit
     fi
+
+    printf "%s\n" "set-option global tagbarjumpclient '${kak_client:-client0}'"
+
     tmp=$(mktemp -d "${TMPDIR:-/tmp}/tagbar.XXXXXXXX")
     tags="$tmp/tags"
     tagbar_buffer="$tmp/buffer"
@@ -153,15 +155,15 @@ define-command -hidden tagbar-update %{ evaluate-commands %sh{
                            remove-highlighter window/whitespace
                            remove-highlighter window/wrap
                        }
-                       try %{ focus %opt{jumpclient} }
+                       try %{ focus $kak_client }
                    }"
 
     ( cat $tagbar_buffer > $fifo; rm -rf $tmp ) > /dev/null 2>&1 < /dev/null &
 
 }}
 
-define-command tagbar-jump -params 1 %{
-    evaluate-commands -client %opt{jumpclient} %sh{
+define-command -hidden tagbar-jump -params 1 %{
+    evaluate-commands -client %opt{tagbarjumpclient} %sh{
         printf "%s:\t%s\n" "$kak_selection" "$1" | awk -F ':\t' '{
                 keys = $2; gsub(/</, "<lt>", keys); gsub(/\t/, "<c-v><c-i>", keys);
                 gsub("&", "&&", keys); gsub("?", "??", keys);
@@ -171,7 +173,7 @@ define-command tagbar-jump -params 1 %{
                 print "try %? buffer %&" bufname "&; execute-keys %&/\\Q" keys "<ret>vc& ? catch %? echo -markup %&{Error}unable to find tag& ?; try %? execute-keys %&s\\Q" select "<ret>& ?"
             }'
     }
-    try %{ focus %opt{jumpclient} }
+    try %{ focus %opt{tagbarjumpclient} }
 }
 
 # This section defines different kinds for ctags supported languages and their kinds
