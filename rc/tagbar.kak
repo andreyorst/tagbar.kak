@@ -178,22 +178,13 @@ define-command tagbar-jump -params 1 %{
 # This section defines different kinds for ctags supported languages and their kinds
 # Full list of supported languages can be obtained by evaluating `ctags --list-kinds' command
 declare-option -hidden str-list tagbar_kinds
-
 try %{
-    hook global WinSetOption filetype=c %{
-        set-option window tagbar_kinds 'd' 'macro definitions' 'e' 'enumerators' 'f' 'function definitions' 'g' 'enumeration names' 'h' 'included header files' 'm' 'struct, and union members' 's' 'structure names' 't' 'typedefs' 'u' 'union names' 'v' 'variable definitions'
-        hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
-    }
-    hook global WinSetOption filetype=cpp %{
-        set-option window tagbar_kinds 'd' 'macro definitions' 'e' 'enumerators' 'f' 'function definitions' 'g' 'enumeration names' 'h' 'included header files' 'm' 'class, struct, and union members' 's' 'structure names' 't' 'typedefs' 'u' 'union names' 'v' 'variable definitions' 'c' 'classes' 'n' 'namespaces'
-        hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
-    }
     hook global WinSetOption filetype=ada %{
-        set-option window tagbar_kinds 'P' 'package specifications' 'p' 'packages' 't' 'types' 'u' 'subtypes' 'c' 'record type components' 'l' 'enum type literals' 'v' 'variables' 'f' 'generic formal parameters' 'n' 'constants' 'x' 'user defined exceptions' 'R' 'subprogram specifications' 'r' 'subprograms' 'K' 'task specifications' 'k' 'tasks' 'O' 'protected data specifications' 'o' 'protected data' 'e' 'task/protected data entries' 'b' 'labels' 'i' 'loop/declare identifiers' 'S' '(ctags internal use)'
+        set-option window tagbar_kinds 'P' 'package specifications' 'p' 'packages' 't' 'types' 'u' 'subtypes' 'c' 'record type components' 'l' 'enum type literals' 'v' 'variables' 'f' 'generic formal parameters' 'n' 'constants' 'x' 'user defined exceptions' 'R' 'subprogram specifications' 'r' 'subprograms' 'K' 'task specifications' 'k' 'tasks' 'O' 'protected data specifications' 'o' 'protected data' 'e' 'task/protected data entries' 'b' 'labels' 'i' 'loop/declare identifiers' 'S' 'ctags internal use'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=ant %{
-        set-option window tagbar_kinds 'p' 'projects' 't' 'targets' 'P' 'properties(global)' 'i' 'antfiles'
+        set-option window tagbar_kinds 'p' 'projects' 't' 'targets' 'P' 'properties' 'i' 'antfiles'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=asciidoc %{
@@ -237,7 +228,15 @@ try %{
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=cmake %{
-        set-option window tagbar_kinds 'f' 'functions' 'm' 'macros' 't' 'targets' 'v' 'variable definitions' 'D' 'options specified with -<a-d>' 'P' 'projects' 'r' 'regex'
+        set-option window tagbar_kinds 'f' 'functions' 'm' 'macros' 't' 'targets' 'v' 'variable definitions' 'D' 'options specified with -D' 'p' 'projects' 'r' 'regex'
+        hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
+    }
+    hook global WinSetOption filetype=c %{
+        set-option window tagbar_kinds 'd' 'macro definitions' 'e' 'enumerators' 'f' 'function definitions' 'g' 'enumeration names' 'h' 'included header files' 'm' 'struct, and union members' 's' 'structure names' 't' 'typedefs' 'u' 'union names' 'v' 'variable definitions'
+        hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
+    }
+    hook global WinSetOption filetype=cpp %{
+        set-option window tagbar_kinds 'd' 'macro definitions' 'e' 'enumerators' 'f' 'function definitions' 'g' 'enumeration names' 'h' 'included header files' 'm' 'class, struct, and union members' 's' 'structure names' 't' 'typedefs' 'u' 'union names' 'v' 'variable definitions' 'c' 'classes' 'n' 'namespaces'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=cpreprocessor %{
@@ -257,7 +256,7 @@ try %{
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=cobol %{
-        set-option window tagbar_kinds 'p' 'paragraphs' 'd' 'data items' 'S' 'source code file' 'f' 'file descriptions' 'G' 'group items' 'P' 'program ids' 's' 'sections' 'D' 'divisions'
+        set-option window tagbar_kinds 'p' 'paragraphs' 'd' 'data items' 'S' 'source code file' 'f' 'file descriptions' 'g' 'group items' 'P' 'program ids' 's' 'sections' 'D' 'divisions'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=cuda %{
@@ -289,7 +288,7 @@ try %{
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=elm %{
-        set-option window tagbar_kinds 'm' 'module' 'n' 'renamed <a-i>mported <a-m>odule' 'P' 'port' 't' 'type <a-d>efinition' 'C' 'type <a-c>onstructor' 'A' 'type <a-a>lias' 'F' 'functions'
+        set-option window tagbar_kinds 'm' 'Module' 'n' 'Renamed Imported Module' 'p' 'Port' 't' 'Type Definition' 'c' 'Type Constructor' 'a' 'Type Alias' 'f' 'Functions'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=erlang %{
@@ -317,11 +316,11 @@ try %{
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=go %{
-        set-option window tagbar_kinds 'p' 'packages' 'f' 'functions' 'c' 'constants' 't' 'types' 'v' 'variables' 's' 'structs' 'i' 'interfaces' 'm' 'struct members' 'M' 'struct anonymous members' 'u' 'unknown' 'P' 'name for specifying imported package'
+        set-option window tagbar_kinds 'p' 'packages' 'f' 'functions' 'c' 'constants' 't' 'types' 'v' 'variables' 's' 'structs' 'i' 'interfaces' 'm' 'struct members' 'M' 'struct anonymous members' 'n' 'interface method specification' 'u' 'unknown' 'P' 'name for specifying imported package'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=html %{
-        set-option window tagbar_kinds 'a' 'named anchors' 'h' 'h1 headings' 'i' 'h2 headings' 'j' 'h3 headings'
+        set-option window tagbar_kinds 'a' 'named anchors' 'h' 'H1 headings' 'i' 'H2 headings' 'j' 'H3 headings'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=iniconf %{
@@ -341,7 +340,7 @@ try %{
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=javascript %{
-        set-option window tagbar_kinds 'f' 'functions' 'c' 'classes' 'm' 'methods' 'p' 'properties' 'C' 'constants' 'v' 'global variables' 'g' 'generators'
+        set-option window tagbar_kinds 'f' 'functions' 'c' 'classes' 'm' 'methods' 'p' 'properties' 'C' 'constants' 'v' 'global variables' 'g' 'generators' 'G' 'getters' 'S' 'setters'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=json %{
@@ -385,11 +384,11 @@ try %{
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=objectivec %{
-        set-option window tagbar_kinds 'i' 'class interface' 'I' 'class implementation' 'P' '<a-p>rotocol' 'M' 'object's method' 'c' 'class' method' 'v' 'global variable' 'E' '<a-o>bject field' 'F' 'a function' 'p' 'a property' 't' 'a type alias' 's' 'a type structure' 'e' 'an enumeration' 'M' '<a-a> preprocessor macro'
+        set-option window tagbar_kinds 'i' 'class interface' 'I' 'class implementation' 'P' 'Protocol' 'm' 'Object's method' 'c' 'Class' method' 'v' 'Global variable' 'E' 'Object field' 'f' 'A function' 'p' 'A property' 't' 'A type alias' 's' 'A type structure' 'e' 'An enumeration' 'M' 'A preprocessor macro' 'C' 'categories'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=ocaml %{
-        set-option window tagbar_kinds 'c' 'classes' 'm' 'object's method' 'M' '<a-m>odule or functor' 'V' 'global variable' 'p' 'signature item' 't' 'type name' 'f' 'a function' 'C' '<a-a> constructor' 'R' 'a 'structure' field' 'e' 'an exception'
+        set-option window tagbar_kinds 'c' 'classes' 'm' 'Object's method' 'M' 'Module or functor' 'v' 'Global variable' 'p' 'Signature item' 't' 'Type name' 'f' 'A function' 'C' 'A constructor' 'r' 'A 'structure' field' 'e' 'An exception'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=passwd %{
@@ -432,6 +431,10 @@ try %{
         set-option window tagbar_kinds 'L' 'logger sections' 'q' 'logger qualnames'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
+    hook global WinSetOption filetype=qemuhx %{
+        set-option window tagbar_kinds 'q' 'QEMU Management Protocol dispatch table entries' 'i' 'item in texinfo doc'
+        hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
+    }
     hook global WinSetOption filetype=qtmoc %{
         set-option window tagbar_kinds 's' 'slots' 'S' 'signals' 'p' 'properties'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
@@ -465,11 +468,11 @@ try %{
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=rust %{
-        set-option window tagbar_kinds 'n' 'module' 's' 'structural type' 'i' 'trait interface' 'c' 'implementation' 'f' 'function' 'g' 'enum' 't' 'type <a-a>lias' 'V' 'global variable' 'M' '<a-m>acro <a-d>efinition' 'M' 'a struct field' 'e' 'an enum variant' 'P' '<a-a> method'
+        set-option window tagbar_kinds 'n' 'module' 's' 'structural type' 'i' 'trait interface' 'c' 'implementation' 'f' 'Function' 'g' 'Enum' 't' 'Type Alias' 'v' 'Global variable' 'M' 'Macro Definition' 'm' 'A struct field' 'e' 'An enum variant' 'P' 'A method'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=scheme %{
-        set-option window tagbar_kinds 'F' 'functions' 's' 'sets'
+        set-option window tagbar_kinds 'f' 'functions' 's' 'sets'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=sh %{
@@ -485,11 +488,15 @@ try %{
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=sql %{
-        set-option window tagbar_kinds 'c' 'cursors' 'f' 'functions' 'E' 'record fields' 'L' 'block label' 'P' 'packages' 'p' 'procedures' 's' 'subtypes' 't' 'tables' 'T' 'triggers' 'v' 'variables' 'i' 'indexes' 'e' 'events' 'U' 'publications' 'R' 'services' 'D' 'domains' 'V' 'views' 'n' 'synonyms' 'x' 'mobi<a-l>ink <a-t>able <a-s>cripts' 'Y' 'mobi<a-l>ink <a-c>onn <a-s>cripts' 'Z' 'mobi<a-l>ink <a-p>roperties '
+        set-option window tagbar_kinds 'c' 'cursors' 'f' 'functions' 'E' 'record fields' 'L' 'block label' 'P' 'packages' 'p' 'procedures' 's' 'subtypes' 't' 'tables' 'T' 'triggers' 'v' 'variables' 'i' 'indexes' 'e' 'events' 'U' 'publications' 'R' 'services' 'D' 'domains' 'V' 'views' 'n' 'synonyms' 'x' 'MobiLink Table Scripts' 'y' 'MobiLink Conn Scripts' 'z' 'MobiLink Properties '
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=systemdunit %{
-        set-option window tagbar_kinds 'U' 'units'
+        set-option window tagbar_kinds 'u' 'units'
+        hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
+    }
+    hook global WinSetOption filetype=systemtap %{
+        set-option window tagbar_kinds 'p' 'probe aliases' 'f' 'functions' 'v' 'variables' 'm' 'macros' 'r' 'regex'
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
     hook global WinSetOption filetype=tcl %{
@@ -581,4 +588,3 @@ try %{
         hook -once global WinSetOption filetype=.* %{ unset-option window tagbar_kinds }
     }
 }
-
