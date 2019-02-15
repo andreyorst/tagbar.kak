@@ -63,13 +63,16 @@ define-command tagbar-enable %{
 
         [ -z "$kak_opt_jumpclient" ] && printf "%s\n" "set-option global jumpclient $kak_client"
 
+        update_cmd="try %{ evaluate-commands -client %opt{jumpclient} tagbar-update }"
+        redisplay_cmd="try %{ evaluate-commands -client %opt{jumpclient} %{ tagbar-disable; tagbar-enable } }"
+
         tagbar_cmd="rename-client %opt{tagbarclient}
                     set-option global tagbar_active true
                     evaluate-commands -client %opt{jumpclient} tagbar-update
-                    hook -group tagbar-watchers global WinDisplay .* %{ tagbar-update }
-                    hook -group tagbar-watchers global BufWritePost .* %{ tagbar-update }
-                    hook -group tagbar-watchers global WinSetOption tagbar_sort=.* %{ tagbar-update }
-                    hook -group tagbar-watchers global WinSetOption tagbar_display_anon=.* %{ tagbar-update }"
+                    hook -group tagbar-watchers global WinDisplay .* %{ $update_cmd }
+                    hook -group tagbar-watchers global BufWritePost .* %{ $update_cmd }
+                    hook -group tagbar-watchers global WinSetOption tagbar_(sort|display_anon)=.* %{ $update_cmd }
+                    hook -group tagbar-watchers global WinSetOption tagbar_(size|side|split)=.* %{ $redisplay_cmd }"
 
         if [ -n "$TMUX" ]; then
             [ "$kak_opt_tagbar_split" = "vertical" ] && split="-v" || split="-h"
@@ -144,12 +147,13 @@ define-command -hidden tagbar-update %{ evaluate-commands %sh{
                        set-option buffer filetype tagbar
                        map buffer normal '<ret>' '<a-h>;/:<c-v><c-i><ret><a-h>2<s-l><a-l><a-;>:<space>tagbar-jump $kak_bufname<ret>'
                        try %{
+                           set-option window tabstop 1
                            remove-highlighter window/wrap
                            remove-highlighter window/numbers
                            remove-highlighter window/whitespace
                            remove-highlighter window/wrap
-                           set-option window tabstop 1
                        }
+                       try %{ focus %opt{jumpclient} }
                    }"
 
     ( cat $tagbar_buffer > $fifo; rm -rf $tmp ) > /dev/null 2>&1 < /dev/null &
