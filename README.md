@@ -38,7 +38,7 @@ Tagbar.kak supports configuration via these options:
 - `tagbar_split` - defines how to split tmux pane, horizontally or vertically;
 - `tagbarclient` - defines name of the client that tagbar will create and use to display itself.
 
-## Automatic startup
+### Automatic startup
 To start tagbar.kak automatically on certain filetypes, you can use this hook:
 
 ``` kak
