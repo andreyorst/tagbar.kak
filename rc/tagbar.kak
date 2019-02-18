@@ -188,7 +188,7 @@ try %{
     hook global WinSetOption filetype=asciidoc %{
         set-option window tagbar_kinds 'c' 'chapters' 's' 'sections' 'S' 'level 2 sections' 't' 'level 3 sections' 'T' 'level 4 sections' 'u' 'level 5 sections' 'a' 'anchors'
     }
-    hook global WinSetOption filetype=asm %{
+    hook global WinSetOption filetype=(asm|gas) %{
         set-option window tagbar_kinds 'd' 'defines' 'l' 'labels' 'm' 'macros' 't' 'types' 's' 'sections'
     }
     hook global WinSetOption filetype=asp %{
