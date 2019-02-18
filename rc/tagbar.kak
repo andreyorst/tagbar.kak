@@ -132,7 +132,7 @@ define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
                 tag = $1;
                 info = $0; sub(".*\t/\\^", "", info); sub("\\$?/$", "", info); gsub(/^[\t ]+/, "", info); gsub("\\\\/", "/", info);
                 if (length(info) != 0)
-                    out = out "  " tag ":\t" info "\n"
+                    out = out "  " tag ": \t" info "\n"
             }
             END {
                 if (length(out) != 0) {
@@ -147,7 +147,7 @@ define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
     printf "%s\n" "evaluate-commands -client %opt{tagbarclient} %{
                        edit! -debug -fifo ${fifo} *tagbar*
                        set-option buffer filetype tagbar
-                       map buffer normal '<ret>' '<a-h>;/:<c-v><c-i><ret><a-h>2<s-l><a-l><a-;>:<space>tagbar-jump $kak_bufname<ret>'
+                       map buffer normal '<ret>' '<a-h>;/: <c-v><c-i><ret><a-h>2<s-l><a-l><a-;>:<space>tagbar-jump $kak_bufname<ret>'
                        try %{
                            set-option window tabstop 1
                            remove-highlighter window/wrap
@@ -163,7 +163,7 @@ define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
 
 define-command -hidden tagbar-jump -params 1 %{
     evaluate-commands -client %opt{tagbarjumpclient} %sh{
-        printf "%s:\t%s\n" "$kak_selection" "$1" | awk -F ':\t' '{
+        printf "%s: \t%s\n" "$kak_selection" "$1" | awk -F ': \t' '{
                 keys = $2; gsub(/</, "<lt>", keys); gsub(/\t/, "<c-v><c-i>", keys);
                 gsub("&", "&&", keys); gsub("?", "??", keys);
                 select = $1; gsub(/</, "<lt>", select); gsub(/\t/, "<c-v><c-i>", select);
