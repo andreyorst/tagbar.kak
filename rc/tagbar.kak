@@ -65,7 +65,8 @@ define-command tagbar-enable %{ evaluate-commands %sh{
     printf "%s\n" "set-option global tagbarjumpclient '${kak_client:-client0}'
                    set-option global tagbar_active 'true'"
 
-    tagbar_cmd="rename-client %opt{tagbarclient}
+    tagbar_cmd="edit! -debug -scratch *tagbar*
+                rename-client %opt{tagbarclient}
                 evaluate-commands -client %opt{tagbarjumpclient} %{ tagbar-update }
                 hook -group tagbar-watchers global FocusIn (?!$kak_opt_tagbarclient).* %{ try %{ tagbar-update 'focus' } }
                 hook -group tagbar-watchers global WinDisplay (?!\*tagbar\*).* %{ try %{ tagbar-update } }
