@@ -96,6 +96,7 @@ define-command tagbar-display %{ nop %sh{
 
 define-command tagbar-disable %{
     set-option global tagbar_active 'false'
+    set-option global tagbar_onscreen 'false'
     remove-hooks global tagbar-watchers
     try %{ delete-buffer *tagbar* } catch %{ echo -debug "Can't close tagbar buffer. Perhaps it was closed by something else" }
     try %{
