@@ -44,6 +44,9 @@ str tagbar_size '28'
 declare-option -hidden -docstring "state of tagbar" \
 str tagbar_active 'false'
 
+declare-option -hidden -docstring "state of tagbar" \
+str tagbar_onscreen 'false'
+
 add-highlighter shared/tagbar group
 add-highlighter shared/tagbar/category regex ^[^\s][^\n]+$ 0:keyword
 add-highlighter shared/tagbar/info     regex (?<=:\h)(.*?)$   1:comment
@@ -63,7 +66,15 @@ define-command tagbar-enable %{ evaluate-commands %sh{
     fi
 
     printf "%s\n" "set-option global tagbarjumpclient '${kak_client:-client0}'
-                   set-option global tagbar_active 'true'"
+                   set-option global tagbar_active true
+                   tagbar-display
+                   set-option global tagbar_onscreen true"
+
+
+}}
+
+define-command tagbar-display %{ nop %sh{
+    [ "${kak_opt_tagbar_onscreen}" = "true" ] && exit
 
     tagbar_cmd="edit! -debug -scratch *tagbar*
                 rename-client %opt{tagbarclient}
@@ -96,9 +107,13 @@ define-command tagbar-disable %{
 
 define-command tagbar-toggle %{ evaluate-commands %sh{
     if [ "${kak_opt_tagbar_active}" = "true" ]; then
-        printf "tagbar-disable\n"
-    else
-        printf "tagbar-enable\n"
+        if [ "${kak_opt_tagbar_onscreen}" = "true" ]; then
+            printf "%s\n" "evaluate-commands -client %opt{tagbarclient} quit
+                           set-option global tagbar_onscreen false"
+        else
+            printf "%s\n" "evaluate-commands tagbar-display
+                           set-option global tagbar_onscreen true"
+        fi
     fi
 }}
 
