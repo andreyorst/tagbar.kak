@@ -69,11 +69,9 @@ define-command tagbar-enable %{ evaluate-commands %sh{
                    set-option global tagbar_active true
                    tagbar-display
                    set-option global tagbar_onscreen true"
-
-
 }}
 
-define-command tagbar-display %{ nop %sh{
+define-command -hidden tagbar-display %{ nop %sh{
     [ "${kak_opt_tagbar_onscreen}" = "true" ] && exit
 
     tagbar_cmd="edit! -debug -scratch *tagbar*
@@ -350,10 +348,10 @@ try %{
         set-option window tagbar_kinds 'f' 'Functions' 'c' 'Constants' 'v' 'Variables' 't' 'Types' 'r' 'Traits' 'p' 'Packages'
     }
     hook global WinSetOption filetype=objectivec %{
-        set-option window tagbar_kinds 'i' 'Class Interface' 'I' 'Class Implementation' 'P' 'Protocol' 'm' 'Object's method' 'c' 'Class' method' 'v' 'Global Variable' 'E' 'Object Field' 'f' 'A Function' 'p' 'A Property' 't' 'A Type Alias' 's' 'A Type Structure' 'e' 'An Enumeration' 'M' 'A Preprocessor Macro' 'C' 'Categories'
+        set-option window tagbar_kinds 'i' 'Class Interface' 'I' 'Class Implementation' 'P' 'Protocol' 'm' 'Object''s method' 'c' 'Class'' method' 'v' 'Global Variable' 'E' 'Object Field' 'f' 'A Function' 'p' 'A Property' 't' 'A Type Alias' 's' 'A Type Structure' 'e' 'An Enumeration' 'M' 'A Preprocessor Macro' 'C' 'Categories'
     }
     hook global WinSetOption filetype=ocaml %{
-        set-option window tagbar_kinds 'c' 'Classes' 'm' 'Object's method' 'M' 'Module Or Functor' 'v' 'Global Variable' 'p' 'Signature Item' 't' 'Type Name' 'f' 'A Function' 'C' 'A Constructor' 'r' 'A 'structure' Field' 'e' 'An Exception'
+        set-option window tagbar_kinds 'c' 'Classes' 'm' 'Object''s method' 'M' 'Module Or Functor' 'v' 'Global Variable' 'p' 'Signature Item' 't' 'Type Name' 'f' 'A Function' 'C' 'A Constructor' 'r' 'A Structure Field' 'e' 'An Exception'
     }
     hook global WinSetOption filetype=passwd %{
         set-option window tagbar_kinds 'u' 'User Names'
