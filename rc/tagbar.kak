@@ -132,6 +132,8 @@ define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
     fifo="${tmp}/fifo"
     mkfifo ${fifo}
 
+    printf "%s\n" "hook global -always KakEnd .* %{ nop %sh{ rm -rf $tmp }}"
+
     ctags --sort="${kak_opt_tagbar_sort:-yes}" -f "$tags" "$kak_buffile" > /dev/null 2>&1
 
     eval "set -- $kak_opt_tagbar_kinds"
