@@ -337,7 +337,7 @@ try %{
     hook global WinSetOption filetype=man %{
         set-option window tagbar_kinds 't' 'Titles' 's' 'Sections'
     }
-    hook global WinSetOption filetype=make %{
+    hook global WinSetOption filetype=makefile %{
         set-option window tagbar_kinds 'm' 'Macros' 't' 'Targets' 'I' 'Makefiles'
     }
     hook global WinSetOption filetype=markdown %{
