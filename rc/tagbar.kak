@@ -186,7 +186,7 @@ define-command -hidden tagbar-jump -params 1 %{
                 select = $1; gsub(/</, "<lt>", select); gsub(/\t/, "<c-v><c-i>", select);
                 gsub("&", "&&", select); gsub("?", "??", select);
                 bufname = $3; gsub("&", "&&", bufname); gsub("?", "??", bufname);
-                print "try %? buffer %&" bufname "&; execute-keys %&/\\Q" keys "<ret>vc& ? catch %? echo -markup %&{Error}unable to find tag& ?; try %? execute-keys %&s\\Q" select "<ret>& ?"
+                print "try %? buffer %&" bufname "&; execute-keys %&<esc>/\\Q" keys "<ret>vc& ? catch %? echo -markup %&{Error}unable to find tag& ?; try %? execute-keys %&s\\Q" select "<ret>& ?"
             }'
     }
     try %{ focus %opt{tagbarjumpclient} }
