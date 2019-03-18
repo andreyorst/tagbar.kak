@@ -182,11 +182,11 @@ define-command -hidden tagbar-jump -params 1 %{
     evaluate-commands -client %opt{tagbarjumpclient} %sh{
         printf "%s: \t%s\n" "$kak_selection" "$1" | awk -F ': \t' '{
                 keys = $2; gsub(/</, "<lt>", keys); gsub(/\t/, "<c-v><c-i>", keys);
-                gsub("&", "&&", keys); gsub("?", "??", keys);
+                gsub("&", "&&", keys); gsub("#", "##", keys);
                 select = $1; gsub(/</, "<lt>", select); gsub(/\t/, "<c-v><c-i>", select);
-                gsub("&", "&&", select); gsub("?", "??", select);
-                bufname = $3; gsub("&", "&&", bufname); gsub("?", "??", bufname);
-                print "try %? buffer %&" bufname "&; execute-keys %&<esc>/\\Q" keys "<ret>vc& ? catch %? echo -markup %&{Error}unable to find tag& ?; try %? execute-keys %&s\\Q" select "<ret>& ?"
+                gsub("&", "&&", select); gsub("#", "##", select);
+                bufname = $3; gsub("&", "&&", bufname); gsub("#", "##", bufname);
+                print "try %# buffer %&" bufname "&; execute-keys %&<esc>/\\Q" keys "<ret>vc& # catch %# echo -markup %&{Error}unable to find tag& #; try %# execute-keys %&s\\Q" select "<ret>& #"
             }'
     }
     try %{ focus %opt{tagbarjumpclient} }
