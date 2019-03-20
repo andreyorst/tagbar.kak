@@ -47,6 +47,14 @@ str tagbar_active 'false'
 declare-option -hidden -docstring "state of tagbar" \
 str tagbar_onscreen 'false'
 
+declare-option -docstring "command to use to generate tag file.
+Can be used to override current ctags command call with another ctags-compatible implementation.
+For example, for `nim' language:
+    hook global WinSetOption filetype=nim %{
+        set-option window tagbar_ctags_cmd 'ntags'
+    }" \
+str tagbar_ctags_cmd 'ctags'
+
 add-highlighter shared/tagbar group
 add-highlighter shared/tagbar/category regex ^[^\s][^\n]+$ 0:keyword
 add-highlighter shared/tagbar/info     regex (?<=:\h)(.*?)$   1:comment
@@ -134,7 +142,14 @@ define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
 
     printf "%s\n" "hook global -always KakEnd .* %{ nop %sh{ rm -rf $tmp }}"
 
-    ctags --sort="${kak_opt_tagbar_sort:-yes}" -f "$tags" "$kak_buffile" > /dev/null 2>&1
+    case ${kak_opt_tagbar_ctags_cmd} in
+        ctags)
+            ctags="ctags --sort='${kak_opt_tagbar_sort:-yes}' -f '$tags' '$kak_buffile'" ;;
+        ctags*|*)
+            ctags="${kak_opt_tagbar_ctags_cmd} -f '$tags' '$kak_buffile'" ;;
+    esac
+
+    eval ${ctags} > /dev/null 2>&1
 
     eval "set -- $kak_opt_tagbar_kinds"
     while [ $# -gt 0 ]; do

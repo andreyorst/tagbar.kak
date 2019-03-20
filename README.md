@@ -25,7 +25,7 @@ manually.
 
 ## Dependencies
 For this plugin to work, you need working [ctags][2] and [readtags][3] programs.
-Note that [readtags][3] isn't shipped with [excuberant-ctags][2] by default (you
+Note that [readtags][3] isn't shipped with [exuberant-ctags][2] by default (you
 can use [universal-ctags][5]).
 
 
@@ -36,7 +36,12 @@ Tagbar.kak supports configuration via these options:
 - `tagbar_side` - defines what side of the tmux pane should be used to open tagbar;
 - `tagbar_size` - defines width or height in cells or percents;
 - `tagbar_split` - defines how to split tmux pane, horizontally or vertically;
-- `tagbarclient` - defines name of the client that tagbar will create and use to display itself.
+- `tagbarclient` - defines name of the client that tagbar will create and use to
+  display itself.
+- `tagbar_ctags_cmd` - defines what command will be used to generate tag
+  file. This option was added to allow setting custom ctags-compatible
+  executable for languages that are not supported by ctags package, but have a
+  compatible parser.
 
 ### Automatic startup
 To start tagbar.kak automatically on certain filetypes, you can use this hook:
