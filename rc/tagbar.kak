@@ -520,7 +520,7 @@ try %{
     hook global WinSetOption filetype=nim %sh{
         if [ -n "$(command -v ntags)" ]; then
             printf "%s\n" "set-option window tagbar_ctags_cmd 'ntags'
-                           set-option window tagbar_kinds 'f' 'Functions' 't' 'Types' 'v' 'Variables'"
+                           set-option window tagbar_kinds 'f' 'Procedures' 't' 'Types' 'v' 'Variables'"
         fi
     }
 }
