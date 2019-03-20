@@ -67,9 +67,9 @@ hook -group tagbar-syntax global WinSetOption filetype=tagbar %{
 }
 
 define-command tagbar-enable %{ evaluate-commands %sh{
-    [ "$kak_opt_tagbar_active" = "true" ] && exit
-    if [ -z "$kak_opt_tagbar_kinds" ]; then
-        printf "%s\n" "echo -markup %{{Information}Filetype '$kak_opt_filetype' is not supported by Tagbar}"
+    [ "${kak_opt_tagbar_active}" = "true" ] && exit
+    if [ -z "${kak_opt_tagbar_kinds}" ]; then
+        printf "%s\n" "echo -markup %{{Information}Filetype '${kak_opt_filetype}' is not supported by Tagbar}"
         exit
     fi
 
@@ -85,18 +85,18 @@ define-command -hidden tagbar-display %{ nop %sh{
     tagbar_cmd="edit! -debug -scratch *tagbar*
                 rename-client %opt{tagbarclient}
                 evaluate-commands -client %opt{tagbarjumpclient} %{ tagbar-update }
-                hook -group tagbar-watchers global FocusIn (?!$kak_opt_tagbarclient).* %{ try %{ tagbar-update 'focus' } }
+                hook -group tagbar-watchers global FocusIn (?!${kak_opt_tagbarclient}).* %{ try %{ tagbar-update 'focus' } }
                 hook -group tagbar-watchers global WinDisplay (?!\*tagbar\*).* %{ try %{ tagbar-update } }
                 hook -group tagbar-watchers global BufWritePost (?!\*tagbar\*).* %{ try %{ tagbar-update } }
                 hook -group tagbar-watchers global WinSetOption tagbar_(sort|display_anon)=.* %{ try %{ tagbar-update } }"
 
     if [ -n "$TMUX" ]; then
-        [ "$kak_opt_tagbar_split" = "vertical" ] && split="-v" || split="-h"
-        [ "$kak_opt_tagbar_side" = "left" ] && side="-b" || side=
+        [ "${kak_opt_tagbar_split}" = "vertical" ] && split="-v" || split="-h"
+        [ "${kak_opt_tagbar_side}" = "left" ] && side="-b" || side=
         [ -n "${kak_opt_tagbar_size%%*%}" ] && measure="-l" || measure="-p"
-        tmux split-window $split $side $measure ${kak_opt_tagbar_size%%%*} kak -c $kak_session -e "$tagbar_cmd"
-    elif [ -n "$kak_opt_termcmd" ]; then
-        ( $kak_opt_termcmd "sh -c 'kak -c $kak_session -e \"$tagbar_cmd\"'" ) > /dev/null 2>&1 < /dev/null &
+        tmux split-window ${split} ${side} ${measure} ${kak_opt_tagbar_size%%%*} kak -c ${kak_session} -e "${tagbar_cmd}"
+    elif [ -n "${kak_opt_termcmd}" ]; then
+        ( ${kak_opt_termcmd} "sh -c 'kak -c ${kak_session} -e \"${tagbar_cmd}\"'" ) > /dev/null 2>&1 < /dev/null &
     fi
 }}
 
@@ -126,35 +126,35 @@ define-command tagbar-toggle %{ evaluate-commands %sh{
 
 define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
     [ "${kak_opt_tagbar_active}" != "true" ] && exit
-    if [ "$1" = "focus" ] && [ "$kak_client" = "$kak_opt_tagbar_last_client" ]; then
+    if [ "$1" = "focus" ] && [ "${kak_client}" = "${kak_opt_tagbar_last_client}" ]; then
         exit
     else
-        printf "%s\n" "set-option global tagbar_last_client %{$kak_client}"
+        printf "%s\n" "set-option global tagbar_last_client %{${kak_client}}"
     fi
 
     printf "%s\n" "set-option global tagbarjumpclient '${kak_client:-client0}'"
 
     tmp=$(mktemp -d "${TMPDIR:-/tmp}/tagbar.XXXXXXXX")
-    tags="$tmp/tags"
-    tagbar_buffer="$tmp/buffer"
+    tags="${tmp}/tags"
+    tagbar_buffer="${tmp}/buffer"
     fifo="${tmp}/fifo"
     mkfifo ${fifo}
 
-    printf "%s\n" "hook global -always KakEnd .* %{ nop %sh{ rm -rf $tmp }}"
+    printf "%s\n" "hook global -always KakEnd .* %{ nop %sh{ rm -rf ${tmp} }}"
 
     case ${kak_opt_tagbar_ctags_cmd} in
         ctags)
-            ctags="ctags --sort='${kak_opt_tagbar_sort:-yes}' -f '$tags' '$kak_buffile'" ;;
+            ctags="ctags --sort='${kak_opt_tagbar_sort:-yes}' -f '${tags}' '${kak_buffile}'" ;;
         ctags*|*)
-            ctags="${kak_opt_tagbar_ctags_cmd} -f '$tags' '$kak_buffile'" ;;
+            ctags="${kak_opt_tagbar_ctags_cmd} -f '${tags}' '${kak_buffile}'" ;;
     esac
 
     eval ${ctags} > /dev/null 2>&1
 
-    eval "set -- $kak_opt_tagbar_kinds"
+    eval "set -- ${kak_opt_tagbar_kinds}"
     while [ $# -gt 0 ]; do
         export description="$2"
-        readtags -t "$tags" -Q '(eq? $kind "'$1'")' -l | awk -F '\t|\n' '
+        readtags -t "${tags}" -Q '(eq? $kind "'$1'")' -l | awk -F '\t|\n' '
             /^__anon[a-zA-Z0-9]+/ {
                 if ( ENVIRON["kak_opt_tagbar_display_anon"] != "true" ) {
                     $0=""
@@ -172,14 +172,14 @@ define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
                     print out
                 }
             }
-        ' >> $tagbar_buffer
+        ' >> ${tagbar_buffer}
         shift 2
     done
 
     printf "%s\n" "evaluate-commands -client %opt{tagbarclient} %{
                        edit! -debug -fifo ${fifo} *tagbar*
                        set-option buffer filetype tagbar
-                       map buffer normal '<ret>' '<a-h>;/: <c-v><c-i><ret><a-h>2<s-l><a-l><a-;>:<space>tagbar-jump $kak_bufname<ret>'
+                       map buffer normal '<ret>' '<a-h>;/: <c-v><c-i><ret><a-h>2<s-l><a-l><a-;>:<space>tagbar-jump ${kak_bufname}<ret>'
                        try %{
                            set-option window tabstop 1
                            remove-highlighter window/wrap
@@ -187,15 +187,15 @@ define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
                            remove-highlighter window/whitespace
                            remove-highlighter window/wrap
                        }
-                       try %{ focus $kak_client }
+                       try %{ focus ${kak_client} }
                    }"
 
-    ( cat $tagbar_buffer > $fifo; rm -rf $tmp ) > /dev/null 2>&1 < /dev/null &
+    ( cat ${tagbar_buffer} > ${fifo}; rm -rf ${tmp} ) > /dev/null 2>&1 < /dev/null &
 }}
 
 define-command -hidden tagbar-jump -params 1 %{
     evaluate-commands -client %opt{tagbarjumpclient} %sh{
-        printf "%s: \t%s\n" "$kak_selection" "$1" | awk -F ': \t' '{
+        printf "%s: \t%s\n" "${kak_selection}" "$1" | awk -F ': \t' '{
                 keys = $2; gsub(/</, "<lt>", keys); gsub(/\t/, "<c-v><c-i>", keys);
                 gsub("&", "&&", keys); gsub("#", "##", keys);
                 select = $1; gsub(/</, "<lt>", select); gsub(/\t/, "<c-v><c-i>", select);
@@ -516,5 +516,11 @@ try %{
     }
     hook global WinSetOption filetype=ansibleplaybook %{
         set-option window tagbar_kinds 'p' 'Plays'
+    }
+    hook global WinSetOption filetype=nim %sh{
+        if [ -n "$(command -v ntags)" ]; then
+            printf "%s\n" "set-option window tagbar_ctags_cmd 'ntags'
+                           set-option window tagbar_kinds 'f' 'Functions' 't' 'Types' 'v' 'Variables'"
+        fi
     }
 }
