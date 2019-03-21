@@ -41,7 +41,11 @@ Tagbar.kak supports configuration via these options:
 - `tagbar_ctags_cmd` - defines what command will be used to generate tag
   file. This option was added to allow setting custom ctags-compatible
   executable for languages that are not supported by ctags package, but have a
-  compatible parser.
+  compatible parser. If you want to set up **tagbar.kak** for unsupported
+  language, you also need to populate `tagbar_kinds` option with pairs of kinds
+  for the language. For example, for C, kinds are defined as follows `'f'
+  'Function Definitions'`, `'g' 'Enumeration Names'`, `'h' 'Included Header
+  files'`, and so on.
 
 ### Automatic startup
 To start tagbar.kak automatically on certain filetypes, you can use this hook:
