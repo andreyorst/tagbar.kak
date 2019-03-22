@@ -7,7 +7,7 @@ This plugin displays the outline overview  of your code, somewhat similar to Vim
 plugin [tagbar][1]. It uses [ctags][2] to  generate tags for current buffer, and
 [readtags][3] to display them.
 
-Tagbar.kak doesn't display  your project structure, but  current file structure,
+**tagbar.kak** doesn't display  your project structure, but  current file structure,
 providing ability to jump to the definition of the tags in current file.
 
 ## Installation
@@ -16,12 +16,21 @@ providing ability to jump to the definition of the tags in current file.
 Add this snippet to your `kakrc`:
 
 ```kak
-plug "andreyorst/tagbar.kak"
+plug "andreyorst/tagbar.kak" config %{
+    # if you have wrap highlighter enamled in you configuration
+    # files it's better to turn it off for tagbar, using this hook:
+    hook global WinSetOption filetype=tagbar %{
+        remove-highlighter window/wrap
+        # you can also disable rendering whitespaces here, and
+    }
+}
 ```
 
 ### Without Plugin Manager
-Clone this repo, and place `tagbar.kak` to your autoload directory, or source it
-manually.
+Clone this repo, and place `tagbar.kak` script to your autoload directory, or
+source it manually. Note: **tagbar.kak** uses huge amount of horizontal space
+for its items, so it is better to turn off `wrap` highlighter for `tagbar`
+filetype, as shown above.
 
 ## Dependencies
 For this plugin to work, you need working [ctags][2] and [readtags][3] programs.
@@ -30,7 +39,7 @@ can use [universal-ctags][5]).
 
 
 ## Configuration
-Tagbar.kak supports configuration via these options:
+**tagbar.kak** supports configuration via these options:
 - `tagbar_sort` - affects tags sorting method in sections of the tagbar buffer;
 - `tagbar_display_anon` - affects displaying of anonymous tags;
 - `tagbar_side` - defines what side of the tmux pane should be used to open tagbar;
@@ -48,31 +57,32 @@ Tagbar.kak supports configuration via these options:
   files'`, and so on.
 
 ### Automatic startup
-To start tagbar.kak automatically on certain filetypes, you can use this hook:
+To start **tagbar.kak** automatically on certain filetypes, you can use this hook:
 
-``` kak
+```kak
 # To see what filetypes are supported use `ctags --list-kinds | awk '/^\w+/'
 hook global WinSetOption filetype=(c|cpp|rust) %{
     tagbar-enable
 }
 ```
 
-Note that tagbar.kak currently allows only one client per session.
+Note that **tagbar.kak** currently allows only one client per session.
 
 ## Usage
-Tagbar.kak provides these commands:
-- `tagbar-enable`  - spawn new client  with `*tagbar*` buffer in  it, and define
+**tagbar.kak** provides these commands:
+- `tagbar-enable` - spawn new client with `*tagbar*` buffer in it, and define
   watching hooks;
 - `tagbar-toggle` - toggles `tagbar` client on and off;
 - `tagbar-disable` - destroys `tagbar` client and support hooks. That's a proper
   way to exit `tagbar`.
 
-When `$TMUX`  option is available  Tagbar.kak will  create split accordingly  to the
-settings.  If Kakoune launched in X,  new window will be spawned, letting window
+When `$TMUX` option is available **tagbar.kak** will create split accordingly to the
+settings.  If Kakoune launched in X, new window will be spawned, letting window
 manager to handle it.
 
-In `tagbar` window you  can use <kbd>Ret</kbd> key to jump  to the definition of
-the tag. `tagbar` window will keep track of file opened in the last active client.
+In `tagbar` window you can use <kbd>Ret</kbd> key to jump to the definition of
+the tag. `tagbarclient` will keep track of file opened in the last active
+client.
 
 [1]: https://github.com/majutsushi/tagbar
 [2]: http://ctags.sourceforge.net/

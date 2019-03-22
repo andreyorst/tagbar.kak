@@ -180,13 +180,7 @@ define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
                        edit! -debug -fifo ${fifo} *tagbar*
                        set-option buffer filetype tagbar
                        map buffer normal '<ret>' ': tagbar-jump %{${kak_bufname}}<ret>'
-                       try %{
-                           set-option window tabstop 1
-                           remove-highlighter window/wrap
-                           remove-highlighter window/numbers
-                           remove-highlighter window/whitespace
-                           remove-highlighter window/wrap
-                       }
+                       try %{ set-option window tabstop 1 }
                        try %{ focus ${kak_client} }
                    }"
 
