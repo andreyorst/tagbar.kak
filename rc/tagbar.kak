@@ -55,6 +55,13 @@ For example, for `nim' language:
     }" \
 str tagbar_ctags_cmd 'ctags'
 
+# format modeline in tagbar window
+# requires `powerline.kak' plugin: https://github.com/andreyorst/powerline.kak
+hook -group tagbar-powerline global WinSetOption filetype=tagbar %{
+    declare-option str powerline_format
+    set-option window powerline_format "mode_info client session position"
+}
+
 add-highlighter shared/tagbar group
 add-highlighter shared/tagbar/category regex ^[^\s][^\n]+$ 0:keyword
 add-highlighter shared/tagbar/info     regex (?<=:\h)(.*?)$   1:comment
