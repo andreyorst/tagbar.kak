@@ -68,6 +68,25 @@ hook global WinSetOption filetype=(c|cpp|rust) %{
 
 Note that **tagbar.kak** currently allows only one client per session.
 
+### Automatic exit
+If you exit main Kakoune client, `tagbarclient` will stay opened, because
+there's currently no mechanism to track client exit event. To exit
+**tagbar.kak** automatically when exiting last Kakoune client, you can alias
+your `:q` and `:wq` to supplement commands `tagbar-quit` and `tagbar-write-quit`
+like so:
+
+```kak
+alias global 'q' 'tagbar-quit'
+alias global 'wq' 'tagbar-write-quit'
+```
+
+These commands perform a check before exiting Kakoune. If there are only two
+clients left, and one of those clients is `%opt{tagbarclient}` then close
+**tagbar.kak**, and then exit Kakoune. These commands support all switches and
+arguments of builtin Kakoune `quit` and `write-quit` commands. These commands
+also accept optional argument `!` to call `quit!` and `write-quit!`
+respectively.
+
 ## Usage
 **tagbar.kak** provides these commands:
 - `tagbar-enable` - spawn new client with `*tagbar*` buffer in it, and define
