@@ -209,33 +209,43 @@ define-command -hidden tagbar-jump -params 1 %{
     try %{ focus %opt{tagbarjumpclient} }
 }
 
-define-command -docstring \
-"tagbar-quit [<exclamation mark>] [<exit status>]: quit current client, and the kakoune session, and close tagbar only if two clients left, one of which is `%opt{tagbarclient}'.
-If `!' is specified as a first argument `quit!' is called. An optional integer parameter can set the client exit status" \
-tagbar-quit -params .. %{ evaluate-commands %sh{
-    if [ $(printf "%s\n" "$kak_client_list" | wc -w) -eq 2 ]; then
-        if [ $(expr "${kak_client_list}" : ".*${kak_opt_tagbar_client}.*") -ne 0 ]; then
-            printf "%s\n" "tagbar-disable"
-        fi
-    fi
-    if [ "$1" = '!' ]; then exclamation='!'; shift; fi
-    printf "%s\n" "quit${exclamation} $@"
-}}
 
-define-command -docstring \
-"tagbar-write-quit [<exclamation mark>] [-sync] [<exit status>]: write current buffer and quit current client, and close tagbar only if two clients left, one of which is `%opt{tagbarclient}'.
-If `!' is specified as a first argument `write-quit!' is called. An optional integer parameter can set the client exit status.
-Switches:
-    -sync  force the synchronization of the file onto the filesystem  " \
-tagbar-write-quit -params .. %{ evaluate-commands %sh{
-    if [ $(printf "%s\n" "$kak_client_list" | wc -w) -eq 2 ]; then
-        if [ $(expr "${kak_client_list}" : ".*${kak_opt_tagbar_client}.*") -ne 0 ]; then
+try %{
+    hook global ClientClose .* %{ evaluate-commands -client %opt{tagbarclient} %sh{
+        eval "set -- ${kak_client_list}"
+        if [ $# -eq 1 ] && [ "$1" = "${kak_opt_tagbarclient}" ]; then
             printf "%s\n" "tagbar-disable"
         fi
-    fi
-    if [ "$1" = '!' ]; then exclamation='!'; shift; fi
-    printf "%s\n" "write-quit${exclamation} $@"
-}}
+    }}
+} catch %{
+    echo -debug "tagbar.kak failed to declare 'ClientClose' hooks, consider using 'tagbar-quit' to quit Kakoune properly"
+
+    define-command -docstring \
+    "tagbar-quit [<exclamation mark>] [<exit status>]: quit current client, and the kakoune session, and close tagbar only if two clients left, one of which is `%opt{tagbarclient}'.
+    If `!' is specified as a first argument `quit!' is called. An optional integer parameter can set the client exit status" \
+    tagbar-quit -params .. %{ evaluate-commands %sh{
+        ( eval "set -- ${kak_client_list}"
+        if [ $# -eq 2 ] && [ $(expr "${kak_client_list}" : ".*${kak_opt_tagbarclient}.*") -ne 0 ]; then
+            printf "%s\n" "tagbar-disable"
+        fi )
+        if [ "$1" = '!' ]; then exclamation='!'; shift; fi
+        printf "%s\n" "quit${exclamation} $@"
+    }}
+
+    define-command -docstring \
+    "tagbar-write-quit [<exclamation mark>] [-sync] [<exit status>]: write current buffer and quit current client, and close tagbar only if two clients left, one of which is `%opt{tagbarclient}'.
+    If `!' is specified as a first argument `write-quit!' is called. An optional integer parameter can set the client exit status.
+    Switches:
+        -sync  force the synchronization of the file onto the filesystem  " \
+    tagbar-write-quit -params .. %{ evaluate-commands %sh{
+        ( eval "set -- ${kak_client_list}"
+        if [ $# -eq 2 ] && [ $(expr "${kak_client_list}" : ".*${kak_opt_tagbarclient}.*") -ne 0 ]; then
+            printf "%s\n" "tagbar-disable"
+        fi )
+        if [ "$1" = '!' ]; then exclamation='!'; shift; fi
+        printf "%s\n" "write-quit${exclamation} $@"
+    }}
+}
 
 # This section defines different kinds for ctags supported languages and their kinds
 # Full list of supported languages can be obtained by evaluating `ctags --list-kinds' command
