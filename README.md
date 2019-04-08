@@ -1,4 +1,3 @@
-
 # tagbar.kak
 
 ![tagbar.kak](https://user-images.githubusercontent.com/19470159/52857326-e109f800-3137-11e9-8341-8993cfd42d6a.png)
@@ -69,6 +68,9 @@ hook global WinSetOption filetype=(c|cpp|rust) %{
 Note that **tagbar.kak** currently allows only one client per session.
 
 ### Automatic exit
+If your Kakoune supports `ClientClose` hook, you're good to go. If not, follow
+the instructions below.
+
 If you exit main Kakoune client, `tagbarclient` will stay opened, because
 there's currently no mechanism to track client exit event. To exit
 **tagbar.kak** automatically when exiting last Kakoune client, you can alias
