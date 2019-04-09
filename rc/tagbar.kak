@@ -111,12 +111,8 @@ define-command tagbar-disable %{
     set-option global tagbar_active 'false'
     set-option global tagbar_onscreen 'false'
     remove-hooks global tagbar-watchers
-    try %{ delete-buffer *tagbar* } catch %{ echo -debug "Can't close tagbar buffer. Perhaps it was closed by something else" }
-    try %{
-        evaluate-commands -client %opt{tagbarclient} quit
-    } catch %{
-        echo -debug "Can't close tagbar client. Perhaps it was closed by something else"
-    }
+    try %{ delete-buffer! *tagbar* } catch %{ echo -debug "Can't delete *tagbar* buffer. Error message: %val{text}" }
+    try %{ evaluate-commands -client %opt{tagbarclient} quit } catch %{ echo -debug "Can't close %opt{tagbarclient}. Error message: %val{text}" }
 }
 
 define-command tagbar-toggle %{ evaluate-commands %sh{
@@ -160,7 +156,7 @@ define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
 
     eval "set -- ${kak_opt_tagbar_kinds}"
     while [ $# -gt 0 ]; do
-        export description="$2"
+        export tagbar_description="$2"
         readtags -t "${tags}" -Q '(eq? $kind "'$1'")' -l | awk -F '\t|\n' '
             /^__anon[a-zA-Z0-9]+/ {
                 if ( ENVIRON["kak_opt_tagbar_display_anon"] != "true" ) {
@@ -175,7 +171,7 @@ define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
             }
             END {
                 if (length(out) != 0) {
-                    print ENVIRON["description"]
+                    print ENVIRON["tagbar_description"]
                     print out
                 }
             }
@@ -185,6 +181,7 @@ define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
 
     printf "%s\n" "evaluate-commands -client %opt{tagbarclient} %{
                        edit! -debug -fifo ${fifo} *tagbar*
+                       hook global BufCloseFifo .* %{ evaluate-commands -buffer *tagbar* %{ set-option buffer readonly true }}
                        set-option buffer filetype tagbar
                        map buffer normal '<ret>' ': tagbar-jump %{${kak_bufname}}<ret>'
                        try %{ set-option window tabstop 1 }
