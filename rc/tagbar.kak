@@ -111,8 +111,8 @@ define-command tagbar-disable %{
     set-option global tagbar_active 'false'
     set-option global tagbar_onscreen 'false'
     remove-hooks global tagbar-watchers
-    try %{ delete-buffer! *tagbar* } catch %{ echo -debug "Can't delete *tagbar* buffer. Error message: %val{text}" }
-    try %{ evaluate-commands -client %opt{tagbarclient} quit } catch %{ echo -debug "Can't close %opt{tagbarclient}. Error message: %val{text}" }
+    try %{ delete-buffer! *tagbar* } catch %{ echo -debug "Can't delete *tagbar* buffer. Error message: %val{error}" }
+    try %{ evaluate-commands -client %opt{tagbarclient} quit } catch %{ echo -debug "Can't close %opt{tagbarclient}. Error message: %val{error}" }
 }
 
 define-command tagbar-toggle %{ evaluate-commands %sh{
