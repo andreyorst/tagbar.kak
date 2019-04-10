@@ -89,7 +89,7 @@ define-command tagbar-enable %{ evaluate-commands %sh{
 define-command -hidden tagbar-display %{ nop %sh{
     [ "${kak_opt_tagbar_onscreen}" = "true" ] && exit
 
-    tagbar_cmd="edit! -debug -scratch *tagbar*
+    tagbar_cmd="try %{ edit! -debug -scratch *tagbar* } catch %{ buffer *tagbar* }
                 rename-client %opt{tagbarclient}
                 evaluate-commands -client %opt{tagbarjumpclient} %{ tagbar-update }
                 hook -group tagbar-watchers global FocusIn (?!${kak_opt_tagbarclient}).* %{ try %{ tagbar-update 'focus' } }
@@ -179,14 +179,14 @@ define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
         shift 2
     done
 
-    printf "%s\n" "evaluate-commands -client %opt{tagbarclient} %{
+    printf "%s\n" "evaluate-commands -client %opt{tagbarclient} %{ try %{
                        edit! -debug -fifo ${fifo} *tagbar*
                        hook global BufCloseFifo .* %{ evaluate-commands -buffer *tagbar* %{ set-option buffer readonly true }}
                        set-option buffer filetype tagbar
                        map buffer normal '<ret>' ': tagbar-jump %{${kak_bufname}}<ret>'
                        try %{ set-option window tabstop 1 }
                        try %{ focus ${kak_client} }
-                   }"
+                   }}"
 
     ( cat ${tagbar_buffer} > ${fifo}; rm -rf ${tmp} ) > /dev/null 2>&1 < /dev/null &
 }}
