@@ -129,6 +129,7 @@ define-command tagbar-toggle %{ evaluate-commands %sh{
 
 define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
     [ "${kak_opt_tagbar_active}" != "true" ] && exit
+    [ -z "${kak_opt_tagbar_kinds}" ] && exit
     if [ "$1" = "focus" ] && [ "${kak_client}" = "${kak_opt_tagbar_last_client}" ]; then
         exit
     else
