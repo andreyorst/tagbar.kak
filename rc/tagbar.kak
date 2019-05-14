@@ -112,11 +112,11 @@ define-command -hidden tagbar-display %{ nop %sh{
 
     tagbar_cmd="try %{ edit! -debug -scratch *tagbar* } catch %{ buffer *tagbar* }
                 rename-client %opt{tagbarclient}
-                evaluate-commands -client %opt{tagbarjumpclient} %{ tagbar-update }
                 hook -group tagbar-watchers global FocusIn (?!${kak_opt_tagbarclient}).* %{ try %{ tagbar-update 'focus' } }
                 hook -group tagbar-watchers global WinDisplay (?!\*tagbar\*).* %{ try %{ tagbar-update } }
                 hook -group tagbar-watchers global BufWritePost (?!\*tagbar\*).* %{ try %{ tagbar-update } }
-                hook -group tagbar-watchers global WinSetOption tagbar_(sort|display_anon)=.* %{ try %{ tagbar-update } }"
+                hook -group tagbar-watchers global WinSetOption tagbar_(sort|display_anon)=.* %{ try %{ tagbar-update } }
+                focus ${kak_client}"
 
     if [ -n "$TMUX" ]; then
         [ "${kak_opt_tagbar_split}" = "vertical" ] && split="-v" || split="-h"
