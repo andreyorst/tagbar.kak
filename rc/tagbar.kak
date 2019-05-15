@@ -116,7 +116,7 @@ define-command -hidden tagbar-display %{ nop %sh{
                 hook -group tagbar-watchers global WinDisplay (?!\*tagbar\*).* %{ try %{ tagbar-update } }
                 hook -group tagbar-watchers global BufWritePost (?!\*tagbar\*).* %{ try %{ tagbar-update } }
                 hook -group tagbar-watchers global WinSetOption tagbar_(sort|display_anon)=.* %{ try %{ tagbar-update } }
-                focus ${kak_client}"
+                focus ${kak_client:-client0}"
 
     if [ -n "$TMUX" ]; then
         [ "${kak_opt_tagbar_split}" = "vertical" ] && split="-v" || split="-h"
