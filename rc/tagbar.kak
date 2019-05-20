@@ -7,6 +7,45 @@
 # │ GitHub.com/andreyorst/tagbar.kak │
 # ╰──────────────────────────────────╯
 
+define-command tagbar-enable %{
+    require-module tagbar
+    tagbar-set-kinds
+    evaluate-commands %sh{
+        [ "${kak_opt_tagbar_active}" = "true" ] && exit
+        if [ -z "${kak_opt_tagbar_kinds}" ]; then
+            printf "%s\n" "echo -markup %{{Information}Filetype '${kak_opt_filetype}' is not supported by Tagbar}"
+            exit
+        fi
+
+        printf "%s\n" "set-option global tagbarjumpclient '${kak_client:-client0}'
+                       set-option global tagbar_active true
+                       tagbar-display
+                       set-option global tagbar_onscreen true"
+    }
+}
+
+define-command tagbar-disable %{
+    set-option global tagbar_active 'false'
+    set-option global tagbar_onscreen 'false'
+    remove-hooks global tagbar-watchers
+    try %{ delete-buffer! *tagbar* } catch %{ echo -debug "Can't delete *tagbar* buffer. Error message: %val{error}" }
+    try %{ evaluate-commands -client %opt{tagbarclient} quit } catch %{ echo -debug "Can't close %opt{tagbarclient}. Error message: %val{error}" }
+}
+
+define-command tagbar-toggle %{ evaluate-commands %sh{
+    if [ "${kak_opt_tagbar_active}" = "true" ]; then
+        if [ "${kak_opt_tagbar_onscreen}" = "true" ]; then
+            printf "%s\n" "evaluate-commands -client %opt{tagbarclient} quit
+                           set-option global tagbar_onscreen false"
+        else
+            printf "%s\n" "evaluate-commands tagbar-display
+                           set-option global tagbar_onscreen true"
+        fi
+    fi
+}}
+
+provide-module tagbar %§
+
 declare-option -hidden -docstring "name of the client in which all source code jumps will be executed" \
 str tagbarjumpclient
 declare-option -docstring "name of the client that tagbar will use to display itself" \
@@ -56,45 +95,6 @@ For example, for `nim' language:
 str tagbar_ctags_cmd 'ctags'
 
 declare-option -hidden str-list tagbar_kinds
-
-define-command tagbar-enable %{
-    require-module tagbar
-    tagbar-set-kinds
-    evaluate-commands %sh{
-        [ "${kak_opt_tagbar_active}" = "true" ] && exit
-        if [ -z "${kak_opt_tagbar_kinds}" ]; then
-            printf "%s\n" "echo -markup %{{Information}Filetype '${kak_opt_filetype}' is not supported by Tagbar}"
-            exit
-        fi
-
-        printf "%s\n" "set-option global tagbarjumpclient '${kak_client:-client0}'
-                       set-option global tagbar_active true
-                       tagbar-display
-                       set-option global tagbar_onscreen true"
-    }
-}
-
-define-command tagbar-disable %{
-    set-option global tagbar_active 'false'
-    set-option global tagbar_onscreen 'false'
-    remove-hooks global tagbar-watchers
-    try %{ delete-buffer! *tagbar* } catch %{ echo -debug "Can't delete *tagbar* buffer. Error message: %val{error}" }
-    try %{ evaluate-commands -client %opt{tagbarclient} quit } catch %{ echo -debug "Can't close %opt{tagbarclient}. Error message: %val{error}" }
-}
-
-define-command tagbar-toggle %{ evaluate-commands %sh{
-    if [ "${kak_opt_tagbar_active}" = "true" ]; then
-        if [ "${kak_opt_tagbar_onscreen}" = "true" ]; then
-            printf "%s\n" "evaluate-commands -client %opt{tagbarclient} quit
-                           set-option global tagbar_onscreen false"
-        else
-            printf "%s\n" "evaluate-commands tagbar-display
-                           set-option global tagbar_onscreen true"
-        fi
-    fi
-}}
-
-provide-module tagbar %§
 
 add-highlighter shared/tagbar group
 add-highlighter shared/tagbar/category regex ^[^\s][^\n]+$ 0:keyword

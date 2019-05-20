@@ -15,12 +15,17 @@ providing ability to jump to the definition of the tags in current file.
 Add this snippet to your `kakrc`:
 
 ```kak
-plug "andreyorst/tagbar.kak" config %{
+plug "andreyorst/tagbar.kak" defer "tagbar" %{
+    set-option global tagbar_sort false
+    set-option global tagbar_size 40
+    set-option global tagbar_display_anon false
+} config %{
     # if you have wrap highlighter enamled in you configuration
     # files it's better to turn it off for tagbar, using this hook:
     hook global WinSetOption filetype=tagbar %{
         remove-highlighter window/wrap
-        # you can also disable rendering whitespaces here, and
+        # you can also disable rendering whitespaces here, line numbers, and
+        # matching characters
     }
 }
 ```
@@ -38,6 +43,11 @@ can use [universal-ctags][5]).
 
 
 ## Configuration
+All options are declared in `tagbar` module so you have to require it before
+configuration, or use `hook global ModuleLoad tagbar %{}` around
+configuration. If you're using plug.kak you can use `defer "tagbar" %{}`
+configuration block, as shown in example above.
+
 **tagbar.kak** supports configuration via these options:
 - `tagbar_sort` - affects tags sorting method in sections of the tagbar buffer;
 - `tagbar_display_anon` - affects displaying of anonymous tags;
