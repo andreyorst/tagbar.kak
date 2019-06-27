@@ -163,7 +163,7 @@ define-command -hidden tagbar-update -params ..1 %{ evaluate-commands %sh{
 
     eval ${ctags} > /dev/null 2>&1
 
-    eval "set -- ${kak_opt_tagbar_kinds}"
+    eval "set -- ${kak_quoted_opt_tagbar_kinds}"
     while [ $# -gt 0 ]; do
         export tagbar_description="$2"
         readtags -t "${tags}" -Q '(eq? $kind "'$1'")' -l | awk -F '\t|\n' '
@@ -218,7 +218,7 @@ define-command -hidden tagbar-jump -params 1 %{
 
 try %{
     hook global ClientClose .* %{ evaluate-commands -client %opt{tagbarclient} %sh{
-        eval "set -- ${kak_client_list}"
+        eval "set -- ${kak_quoted_client_list}"
         if [ $# -eq 1 ] && [ "$1" = "${kak_opt_tagbarclient}" ]; then
             printf "%s\n" "tagbar-disable"
         fi
@@ -230,7 +230,7 @@ try %{
     "tagbar-quit [<exclamation mark>] [<exit status>]: quit current client, and the kakoune session, and close tagbar only if two clients left, one of which is `%opt{tagbarclient}'.
     If `!' is specified as a first argument `quit!' is called. An optional integer parameter can set the client exit status" \
     tagbar-quit -params .. %{ evaluate-commands %sh{
-        ( eval "set -- ${kak_client_list}"
+        ( eval "set -- ${kak_quoted_client_list}"
         if [ $# -eq 2 ] && [ $(expr "${kak_client_list}" : ".*${kak_opt_tagbarclient}.*") -ne 0 ]; then
             printf "%s\n" "tagbar-disable"
         fi )
@@ -244,7 +244,7 @@ try %{
     Switches:
         -sync  force the synchronization of the file onto the filesystem  " \
     tagbar-write-quit -params .. %{ evaluate-commands %sh{
-        ( eval "set -- ${kak_client_list}"
+        ( eval "set -- ${kak_quoted_client_list}"
         if [ $# -eq 2 ] && [ $(expr "${kak_client_list}" : ".*${kak_opt_tagbarclient}.*") -ne 0 ]; then
             printf "%s\n" "tagbar-disable"
         fi )
