@@ -44,7 +44,7 @@ can use [universal-ctags][5]).
 
 ## Configuration
 All options are declared in `tagbar` module so you have to require it before
-configuration, or use `hook global ModuleLoad tagbar %{}` around
+configuration, or use `hook global ModuleLoaded tagbar %{}` around
 configuration. If you're using plug.kak you can use `defer "tagbar" %{}`
 configuration block, as shown in example above.
 

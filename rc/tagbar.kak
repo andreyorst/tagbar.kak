@@ -366,7 +366,7 @@ define-command -hidden tagbar-set-kinds %{ evaluate-commands %sh{
 
 §
 
-hook global ModuleLoad powerline %§
+hook global ModuleLoaded powerline %§
 
 # format modeline in tagbar window
 # requires `powerline.kak' plugin: https://github.com/andreyorst/powerline.kak
