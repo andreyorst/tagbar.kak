@@ -119,7 +119,7 @@ tagbar-toggle %{ evaluate-commands %sh{
 define-command -hidden tagbar-display %{ nop %sh{
     [ "${kak_opt_tagbar_onscreen}" = "true" ] && exit
 
-    tagbar_cmd="try %{ edit! -debug -scratch *tagbar* } catch %{ buffer *tagbar* }
+    tagbar_cmd="try %{ buffer *tagbar* } catch %{ edit! -debug -scratch *tagbar* }
                 rename-client %opt{tagbarclient}
                 hook -group tagbar-watchers global FocusIn (?!${kak_opt_tagbarclient}).* %{ try %{ tagbar-update 'focus' } }
                 hook -group tagbar-watchers global WinDisplay (?!\*tagbar\*).* %{ try %{ tagbar-update } }
