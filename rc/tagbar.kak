@@ -21,6 +21,8 @@ declare-option -docstring "name of the client that tagbar will use to display it
 str tagbarclient 'tagbarclient'
 declare-option -hidden -docstring "helps to keep track of focus events" \
 str tagbar_last_client ''
+declare-option -docstring "Powerline format string for Tagbar" \
+str tagbar_powerline_format "mode_info client session position"
 
 declare-option -docstring "Sort tags in tagbar buffer.
   Possible values:
@@ -372,7 +374,7 @@ hook global ModuleLoaded powerline %§
 # requires `powerline.kak' plugin: https://github.com/andreyorst/powerline.kak
 hook -group tagbar-powerline global WinSetOption filetype=tagbar %{
     declare-option str powerline_format
-    set-option window powerline_format "mode_info client session position"
+    set-option window powerline_format %opt{tagbar_powerline_format}
 }
 
 §
