@@ -81,6 +81,10 @@ hook -group tagbar-syntax global WinSetOption filetype=tagbar %{
 define-command -hidden tagbar-enable-impl %{
     tagbar-set-kinds
     evaluate-commands %sh{
+        if [ -z "$(command -v readtags)" ]; then
+            printf "%s\n" "echo -debug %{tagbar.kak: readtags is not installed.}"
+            exit
+        fi
         [ "${kak_opt_tagbar_active}" = "true" ] && exit
         if [ -z "${kak_opt_tagbar_kinds}" ]; then
             printf "%s\n" "echo -markup %{{Information}Filetype '${kak_opt_filetype}' is not supported by Tagbar}"
