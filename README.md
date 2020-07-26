@@ -1,3 +1,5 @@
+# THIS PLUGIN IS NOT ACTIVELY MAINTAINED. FOR MORE DETAILS PLEASE SEE [THIS DISCOURSE POST](https://discuss.kakoune.com/t/maintainance-warning-and-request)
+
 # tagbar.kak
 
 ![tagbar.kak](https://user-images.githubusercontent.com/19470159/52857326-e109f800-3137-11e9-8341-8993cfd42d6a.png)
