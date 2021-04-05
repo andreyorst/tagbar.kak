@@ -38,8 +38,11 @@ filetype, as shown above.
 
 ## Dependencies
 For this plugin to work, you need working [ctags][2] and [readtags][3] programs.
-Note that [readtags][3] isn't shipped with [exuberant-ctags][2] by default (you
-can use [universal-ctags][5]).
+Note that [readtags][3] isn't shipped with [exuberant-ctags][2] by default, you
+can use [universal-ctags][5] instead (note that you may need to uninstall
+exuberant).
+
+If you work out of tmux, you will need to install [xdotool][6].
 
 
 ## Configuration
@@ -124,3 +127,4 @@ client.
 [3]: http://ctags.sourceforge.net/tool_support.html
 [4]: https://github.com/andreyorst/plug.kak
 [5]: https://github.com/universal-ctags
+[6]: https://github.com/jordansissel/xdotool
