@@ -138,6 +138,18 @@ define-command -hidden tagbar-display %{ nop %sh{
         [ "${kak_opt_tagbar_side}" = "left" ] && side="-b" || side=
         [ -n "${kak_opt_tagbar_size%%*%}" ] && measure="-l" || measure="-p"
         tmux split-window ${split} ${side} ${measure} ${kak_opt_tagbar_size%%%*} kak -c ${kak_session} -e "${tagbar_cmd}"
+
+    elif [ "$TERM" = "xterm-kitty" ]; then
+        match=""
+        if [ -n "$kak_client_env_KITTY_WINDOW_ID" ]; then
+            match="--match=id:$kak_client_env_KITTY_WINDOW_ID"
+        fi
+
+        listen=""
+        if [ -n "$kak_client_env_KITTY_LISTEN_ON" ]; then
+            listen="--to=$kak_client_env_KITTY_LISTEN_ON"
+        fi
+        kitty @ $listen launch --no-response --type="$kak_opt_kitty_window_type" --cwd="$PWD" $match kak -c ${kak_session} -e "${tagbar_cmd}"
     elif [ -n "${kak_opt_termcmd}" ]; then
         ( ${kak_opt_termcmd} "sh -c 'kak -c ${kak_session} -e \"${tagbar_cmd}\"'" ) > /dev/null 2>&1 < /dev/null &
     fi
